@@ -1,0 +1,53 @@
+//
+//  TokenManager.swift
+//  Swagger Generated
+//  Created by David Solberg on 12/21/15.
+//
+
+// Note: Requires SSKeychain for Persistence
+
+import Foundation
+
+struct Token {
+    
+    // MARK: - Exposed Variables
+    
+    static var header : String? {
+        get { return getToken(headerToken) }
+        set { setToken(newValue, account: headerToken) }
+    }
+    
+    static var refresh : String? {
+        get { return getToken(refreshToken) }
+        set { setToken(newValue, account: refreshToken) }
+    }
+
+    // MARK: - Private Methods/Variables
+    
+    private static let service = "TokenService"
+    private static let headerToken = "AccountNormalToken"
+    private static let refreshToken = "RefreshToken"
+    
+    private static func setToken(token: String?, account: String)
+    {
+        if let token = token {
+            saveToken(token, account: account)
+        }
+        else {
+            deleteToken(account)
+        }
+    }
+    
+    private static func saveToken(token: String, account: String) {
+        let success = SSKeychain.setPassword(token, forService: service, account: account)
+        assert(success, "SSKeychain failed to save the token!")
+    }
+    
+    private static func getToken(account: String) -> String? {
+        return SSKeychain.passwordForService(service, account: account)
+    }
+    
+    private static func deleteToken(account: String) {
+        SSKeychain.deletePasswordForService(service, account: account)
+    }
+}

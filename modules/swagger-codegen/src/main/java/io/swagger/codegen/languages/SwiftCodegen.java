@@ -27,7 +27,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
   protected String projectName = "SwaggerClient";
   protected boolean unwrapRequired = false;
   protected String[] responseAs = new String[0];
-  protected String sourceFolder = "Classes" + File.separator + "Swaggers";
+  protected String sourceFolder = "SwaggerGenerated";
 
   public CodegenType getTag() {
     return CodegenType.CLIENT;
@@ -78,7 +78,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         "true", "lazy", "operator", "in", "COLUMN", "left", "private", "return", "FILE", "mutating", "protocol",
         "switch", "FUNCTION", "none", "public", "where", "LINE", "nonmutating", "static", "while", "optional",
         "struct", "override", "subscript", "postfix", "typealias", "precedence", "var", "prefix", "Protocol",
-        "required", "right", "set", "Type", "unowned", "weak")
+        "required", "right", "set", "Type", "unowned", "weak", "guard", "defer")
     );
 
     typeMapping = new HashMap<String, String>();
@@ -132,7 +132,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
     } else {
       additionalProperties.put("projectName", projectName);
     }
-    sourceFolder = projectName + File.separator + sourceFolder;
+    
 
     // Setup unwrapRequired option, which makes all the properties with "required" non-optional
     if (additionalProperties.containsKey("unwrapRequired")) {
@@ -150,18 +150,13 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
       }
     }
     additionalProperties.put("responseAs", responseAs);
-    if (ArrayUtils.contains(responseAs, LIBRARY_PROMISE_KIT)) {
-      additionalProperties.put("usePromiseKit", true);
-    }
-
-    supportingFiles.add(new SupportingFile("Podspec.mustache", "", projectName + ".podspec"));
-    supportingFiles.add(new SupportingFile("Cartfile.mustache", "", "Cartfile"));
     supportingFiles.add(new SupportingFile("APIHelper.mustache", sourceFolder, "APIHelper.swift"));
-    supportingFiles.add(new SupportingFile("AlamofireImplementations.mustache", sourceFolder,
-            "AlamofireImplementations.swift"));
+    supportingFiles.add(new SupportingFile("NetworkRequestor.mustache", sourceFolder, "NetworkRequestor.swift"));
+    supportingFiles.add(new SupportingFile("TokenManager.mustache", sourceFolder, "TokenManager.swift"));
     supportingFiles.add(new SupportingFile("Extensions.mustache", sourceFolder, "Extensions.swift"));
     supportingFiles.add(new SupportingFile("Models.mustache", sourceFolder, "Models.swift"));
-    supportingFiles.add(new SupportingFile("APIs.mustache", sourceFolder, "APIs.swift"));
+    supportingFiles.add(new SupportingFile("NetworkHelper.mustache", sourceFolder, "NetworkHelper.swift"));
+    supportingFiles.add(new SupportingFile("OAuthAPI.mustache", sourceFolder, "OAuthAPI.swift"));
   }
 
   @Override

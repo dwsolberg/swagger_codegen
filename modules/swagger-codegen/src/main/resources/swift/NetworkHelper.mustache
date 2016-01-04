@@ -1,0 +1,49 @@
+//
+// NetworkHelper.swift
+// API Version {{appVersion}}
+//
+
+import Foundation
+
+/// A method to combine dictionaries of type [String:String]
+func +(lhs: [String:String], rhs: [String:String]) -> [String:String] {
+    var base = [String:String]()
+    lhs.forEach { (key, value) -> () in
+        base.updateValue(value, forKey: key)
+    }
+    rhs.forEach { (key, value) -> () in
+        base.updateValue(value, forKey: key)
+    }
+    return base
+}
+
+struct Network {
+
+    static let basePath = "http://dev.myibucketlist.com/api/v1"
+
+    // Note: The programmer needs to manually enter the client_id and secret 
+    struct OAuth {
+        static let grant_type_password = "password"
+        static let grant_type_refresh = "refresh_token"
+        static let client_id = "cf8ec3877984e196f41d04f83225a6cf2a241cc602f8b3d3b49309227f657de3"
+        static let client_secret = "5cb4eb170d616e3a61c8343a4cdd9b9fbedc8845f4cca133580366893e72e365"
+    }
+    
+    static func urlForEndpoint(endpoint: String) -> NSURL {
+        return NSURL(string: Network.basePath + endpoint)!
+    }
+    
+    struct Header {
+        static let json = ["Content-Type":"application/json"]
+        
+        static func auth() -> [String:String]? {
+            guard let token = Token.header else { return nil }
+            return ["Authorization":"Bearer " + token]
+        }
+        
+        static var standardIncludeAuth: [String:String]? {
+            guard let auth = Network.Header.auth() else { return nil }
+            return Network.Header.json + auth
+        }
+    }
+}

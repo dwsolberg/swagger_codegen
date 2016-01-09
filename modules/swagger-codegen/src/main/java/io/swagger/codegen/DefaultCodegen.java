@@ -1,5 +1,9 @@
 package io.swagger.codegen;
 
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import io.swagger.codegen.examples.ExampleGenerator;
@@ -558,6 +562,15 @@ public class DefaultCodegen {
         m.classname = toModelName(name);
         m.classVarName = toVarName(name);
         m.modelJson = Json.pretty(model);
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String,Object> jsonData = mapper.readValue(m.modelJson, Map.class);
+            m.shouldInitForRequiredVars = (Boolean) jsonData.get("x-init-required");
+        } catch (IOException e) { 
+            System.err.println("Did not find x-init-required for model class: " + m.classname + " " + e.getMessage());
+        }
+
         m.externalDocs = model.getExternalDocs();
         if (model instanceof ArrayModel) {
             ArrayModel am = (ArrayModel) model;
@@ -1221,6 +1234,7 @@ public class DefaultCodegen {
             if (model instanceof ModelImpl) {
                 ModelImpl impl = (ModelImpl) model;
                 CodegenModel cm = fromModel(bp.getName(), impl);
+                cm.vendorExtensions = model.getVendorExtensions();
                 if (cm.emptyVars != null && cm.emptyVars == false) {
                     p.dataType = getTypeDeclaration(cm.classname);
                     imports.add(p.dataType);
@@ -1243,6 +1257,7 @@ public class DefaultCodegen {
                 // and get a single property from it
                 ArrayModel impl = (ArrayModel) model;
                 CodegenModel cm = fromModel(bp.getName(), impl);
+                cm.vendorExtensions = model.getVendorExtensions();
                 // get the single property
                 ArrayProperty ap = new ArrayProperty().items(impl.getItems());
                 ap.setRequired(param.getRequired());

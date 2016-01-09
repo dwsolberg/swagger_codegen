@@ -13,6 +13,16 @@ class {{classname}}: NSObject, JSONEncodable, NSCoding {
 {{#vars}}    let key_{{name}} = "{{name}}"
 {{/vars}}
 
+{{#vendorExtensions}}vendorExtensions {{#x-container-init}}init{{/x-container-init}} {{/vendorExtensions}}
+
+{{#parent}}parent: {{parent}}{{/parent}}
+{{#name}}name: {{name}}{{/name}}
+{{#classname}}classname: {{classname}}{{/classname}}
+{{#classVarName}}classVarName: {{classVarName}}{{/classVarName}}
+{{#modelJson}}modelJson: {{modelJson}}{{/modelJson}}
+{{#parent}}parent: {{parent}}{{/parent}}
+{{#description}}description: {{description}}{{/description}}
+
     // MARK: - Variables
 {{#vars}}{{#description}}    /// {{description}}{{/description}}
     var {{name}}: {{{datatype}}}{{^required}}?{{/required}}{{#required}}!{{/required}}{{#defaultValue}} = {{{defaultValue}}}{{/defaultValue}}
@@ -30,8 +40,12 @@ class {{classname}}: NSObject, JSONEncodable, NSCoding {
         return dictionary
     }
 
-    override init() { }
-    
+    // MARK: - Initializer
+{{#shouldInitForRequiredVars}}    init({{#vars}}{{#required}}{{name}}: {{{datatype}}}{{#hasMore}}, {{/hasMore}}{{/required}}{{/vars}}) {
+{{#vars}}{{#required}}       self.{{name}} = {{name}}
+{{/required}}{{/vars}}    }{{/shouldInitForRequiredVars}}{{^shouldInitForRequiredVars}}
+    override init() { } ++{{/shouldInitForRequiredVars}}
+
     // MARK: - NSCoding Protocol Methods
     required init?(coder aDecoder: NSCoder) {
         super.init()

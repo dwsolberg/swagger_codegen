@@ -31,10 +31,11 @@ class {{classname}}: NSObject, JSONEncodable, NSCoding {
     }
 
     // MARK: - Initializer
-{{#shouldInitForRequiredVars}}    init({{#vars}}{{#required}}{{name}}: {{{datatype}}}{{#hasMore}}, {{/hasMore}}{{/required}}{{/vars}}) {
+{{#shouldInitForRequiredVars}}    convenience init({{#vars}}{{#required}}{{name}}: {{{datatype}}}{{#hasMore}}, {{/hasMore}}{{/required}}{{/vars}}) {
 {{#vars}}{{#required}}       self.{{name}} = {{name}}
-{{/required}}{{/vars}}    }{{/shouldInitForRequiredVars}}{{^shouldInitForRequiredVars}}
-    override init() { }{{/shouldInitForRequiredVars}}
+{{/required}}{{/vars}}    }{{/shouldInitForRequiredVars}}
+
+    override init() { }
 
     // MARK: - NSCoding Protocol Methods
     required init?(coder aDecoder: NSCoder) {

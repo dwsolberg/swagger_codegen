@@ -19,11 +19,11 @@ enum NetworkResult<T> {
 public class NetworkRequestorWithResultType<T>
 {
     let headers: [String:String]
-    let parameters: [String:AnyObject]
+    let parameters: [String:AnyObject]?
     let method: String
     let url: NSURL
     
-    required public init(method: String, URL: NSURL, headers: [String:String], parameters: [String:AnyObject]) {
+    required public init(method: String, URL: NSURL, headers: [String:String], parameters: [String:AnyObject]?) {
         self.method = method
         self.url = URL
         self.headers = headers
@@ -121,7 +121,7 @@ public class NetworkRequestorWithResultType<T>
         let request : NSMutableURLRequest = NSMutableURLRequest(URL: url, cachePolicy: NSURLRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData, timeoutInterval: 120)
         request.HTTPMethod = method
         if self.headers.count > 0 { request.allHTTPHeaderFields = headers }
-        if self.parameters.count > 0 {
+        if let parameters = self.parameters where parameters.count > 0 {
             let encoded = parameters.encodeToJSON()
             let bodyData: NSData
             do {

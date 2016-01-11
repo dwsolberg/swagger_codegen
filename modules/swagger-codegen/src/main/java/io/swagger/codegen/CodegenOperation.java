@@ -15,6 +15,7 @@ public class CodegenOperation {
             hasMore = Boolean.TRUE, isMultipart, isResponseBinary = Boolean.FALSE;
     public String path, operationId, returnType, httpMethod, returnBaseType,
             returnContainer, summary, notes, baseName, defaultResponse;
+    public String return_typeCamel;
     public List<Map<String, String>> consumes, produces;
     public CodegenParameter bodyParam;
     public List<CodegenParameter> allParams = new ArrayList<CodegenParameter>();

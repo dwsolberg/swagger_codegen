@@ -7,6 +7,8 @@ public class CodegenProperty {
     public String baseName, complexType, getter, setter, description, datatype, datatypeWithEnum,
             name, min, max, defaultValue, baseType, containerType;
 
+    public String nameCamelCase;
+
     public String unescapedDescription;
 
     /**

@@ -1,5 +1,5 @@
 {{#models}}{{#model}}//
-// {{classname}}.swift
+// {{class_nameCamel}}.swift
 // API Version {{appVersion}}
 // Generated: {{generatedDate}}
 //
@@ -7,45 +7,44 @@
 import Foundation
 
 {{#description}}/// {{description}}{{/description}}
-class {{classname}}: NSObject, JSONEncodable, NSCoding {
+class {{class_nameCamel}}: NSObject, JSONEncodable, NSCoding {
 
     // MARK: - Encoding/Decoding Keys
 {{#vars}}    let key_{{name}} = "{{name}}"
 {{/vars}}
 
     // MARK: - Variables
-{{#vars}}{{#description}}    /// {{description}}{{/description}}
-    var {{name}}: {{{datatype}}}{{^required}}?{{/required}}{{#required}}!{{/required}}{{#defaultValue}} = {{{defaultValue}}}{{/defaultValue}}
-    
+{{#vars}}    var {{nameCamelCase}}: {{{datatype}}}{{^required}}?{{/required}}{{#required}}!{{/required}}{{#defaultValue}} = {{{defaultValue}}}{{/defaultValue}}{{#description}}  // {{description}}{{/description}}
 {{/vars}}
+
+    // MARK: - Initializer
+{{#shouldInitForRequiredVars}}    init({{#vars}}{{#required}}{{nameCamelCase}}: {{{datatype}}}{{#hasMore}}, {{/hasMore}}{{/required}}{{/vars}}) {
+{{#vars}}{{#required}}       self.{{nameCamelCase}} = {{nameCamelCase}}
+{{/required}}{{/vars}}    }{{/shouldInitForRequiredVars}}{{^shouldInitForRequiredVars}}
+    override init() { }{{/shouldInitForRequiredVars}}
+
     // MARK: - JSONEncodable Protocol Methods
     func encodeToJSON() -> AnyObject {
         var dictionary = [String:AnyObject]()
 {{#vars}}{{#required}}
-        dictionary[key_{{name}}] = self.{{name}}.encodeToJSON()
+        dictionary[key_{{name}}] = self.{{nameCamelCase}}.encodeToJSON()
 {{/required}}{{^required}}
-        if let valid_{{name}} = self.{{name}} {
-            dictionary[key_{{name}}] = valid_{{name}}.encodeToJSON()
+        if let valid_{{nameCamelCase}} = self.{{nameCamelCase}} {
+            dictionary[key_{{name}}] = valid_{{nameCamelCase}}.encodeToJSON()
         }{{/required}}{{/vars}}
         return dictionary
     }
-
-    // MARK: - Initializer
-{{#shouldInitForRequiredVars}}    init({{#vars}}{{#required}}{{name}}: {{{datatype}}}{{#hasMore}}, {{/hasMore}}{{/required}}{{/vars}}) {
-{{#vars}}{{#required}}       self.{{name}} = {{name}}
-{{/required}}{{/vars}}    }{{/shouldInitForRequiredVars}}{{^shouldInitForRequiredVars}}
-    override init() { }{{/shouldInitForRequiredVars}}
 
     // MARK: - NSCoding Protocol Methods
     required init?(coder aDecoder: NSCoder) {
         super.init()
 {{#vars}}        if let valid_{{name}} = aDecoder.decodeObjectForKey(key_{{name}}) as? {{{datatype}}} {
-            self.{{name}} = valid_{{name}}
+            self.{{nameCamelCase}} = valid_{{name}}
         }
 {{/vars}}    }
 
     func encodeWithCoder(aCoder: NSCoder) {
-{{#vars}}        aCoder.encodeObject({{name}}, forKey: key_{{name}})
+{{#vars}}        aCoder.encodeObject(self.{{nameCamelCase}}, forKey: key_{{name}})
 {{/vars}}    }
 }{{/model}}
 {{/models}}

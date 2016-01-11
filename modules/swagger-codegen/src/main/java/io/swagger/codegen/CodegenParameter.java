@@ -9,6 +9,7 @@ public class CodegenParameter {
     public Boolean isFormParam, isQueryParam, isPathParam, isHeaderParam,
             isCookieParam, isBodyParam, isFile, notFile, hasMore, isContainer, secondaryParam, isBinary;
     public String baseName, paramName, dataType, collectionFormat, description, baseType, defaultValue;
+    public String paramNameCamelCase;
     public String jsonSchema;
     public boolean isEnum;
     public List<String> _enum;
@@ -31,6 +32,7 @@ public class CodegenParameter {
         output.secondaryParam = this.secondaryParam;
         output.baseName = this.baseName;
         output.paramName = this.paramName;
+        output.paramNameCamelCase = this.paramNameCamelCase;
         output.dataType = this.dataType;
         output.collectionFormat = this.collectionFormat;
         output.description = this.description;

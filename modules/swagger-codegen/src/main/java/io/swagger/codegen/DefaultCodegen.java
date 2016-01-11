@@ -562,7 +562,9 @@ public class DefaultCodegen {
         m.classname = toModelName(name);
         m.classVarName = toVarName(name);
         m.modelJson = Json.pretty(model);
+        m.class_nameCamel = camelize(m.classname, false);
 
+        // Search the JSON for custom initializers
         try {
             ObjectMapper mapper = new ObjectMapper();
             Map<String,Object> jsonData = mapper.readValue(m.modelJson, Map.class);
@@ -671,6 +673,7 @@ public class DefaultCodegen {
         property.defaultValue = toDefaultValue(p);
         property.jsonSchema = Json.pretty(p);
         property.isReadOnly = p.getReadOnly();
+        property.nameCamelCase = camelize(property.name, true);
 
         String type = getSwaggerType(p);
         if (p instanceof AbstractNumericProperty) {
@@ -994,6 +997,7 @@ public class DefaultCodegen {
                     op.examples = new ExampleGenerator(definitions).generate(methodResponse.getExamples(), operation.getProduces(), responseProperty);
                     op.defaultResponse = toDefaultValue(responseProperty);
                     op.returnType = cm.datatype;
+                    op.return_typeCamel = camelize(op.returnType, false);
                     if (cm.isContainer != null) {
                         op.returnContainer = cm.containerType;
                         if ("map".equals(cm.containerType)) {
@@ -1287,6 +1291,7 @@ public class DefaultCodegen {
             }
             p.paramName = toParamName(bp.getName());
         }
+        p.paramNameCamelCase = camelize(p.paramName, false);
         return p;
     }
 

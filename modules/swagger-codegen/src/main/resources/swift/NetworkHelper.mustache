@@ -17,6 +17,13 @@ func +(lhs: [String:String], rhs: [String:String]) -> [String:String] {
     return base
 }
 
+/// Checks whether the status code is 200-something.
+extension NSHTTPURLResponse {
+    var isValid: Bool {
+        return (self.statusCode > 199 && self.statusCode < 300) ? true : false
+    }
+}
+
 struct Network {
 
     static let basePath = "http://dev.myibucketlist.com/api/v1"

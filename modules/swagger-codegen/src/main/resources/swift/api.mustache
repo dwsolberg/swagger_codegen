@@ -15,11 +15,11 @@ class {{classname}} {
      {{#authMethods}}- {{#isOAuth}}OAuth{{/isOAuth}}{{/authMethods}}{{#responseHeaders}}
      - responseHeaders: {{responseHeaders}}{{/responseHeaders}}{{#externalDocs}}
      - externalDocs: {{externalDocs}}{{/externalDocs}}{{#allParams}}
-     - parameter: {{paramName}}: (type: {{#isFormParam}}form{{/isFormParam}}{{#isQueryParam}}query{{/isQueryParam}}{{#isPathParam}}path{{/isPathParam}}{{#isHeaderParam}}header{{/isHeaderParam}}{{#isBodyParam}}body{{/isBodyParam}}) {{description}}{{/allParams}}
-     - returns: NetworkResult<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Void{{/returnType}}> {{description}}
+     - parameter: {{paramNameCamelCase}}: (type: {{#isFormParam}}form{{/isFormParam}}{{#isQueryParam}}query{{/isQueryParam}}{{#isPathParam}}path{{/isPathParam}}{{#isHeaderParam}}header{{/isHeaderParam}}{{#isBodyParam}}body{{/isBodyParam}}) {{description}}{{/allParams}}
+     - returns: NetworkResult<{{#returnType}}{{{return_typeCamel}}}{{/returnType}}{{^returnType}}Void{{/returnType}}> {{description}}
      */
 
-    static func {{operationId}}({{#allParams}}{{paramName}}{{#secondaryParam}}{{paramName}}{{/secondaryParam}}: {{{dataType}}}{{^required}}?{{/required}}{{#hasMore}}, {{/hasMore}}{{/allParams}}, completion: (result: NetworkResult<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Void{{/returnType}}>) -> Void) {
+    static func {{operationId}}({{#allParams}}################{{paramNameCamelCase}}{{#secondaryParam}}{{paramNameCamelCase}}{{/secondaryParam}}: {{{dataType}}}{{^required}}?{{/required}}{{#hasMore}}, {{/hasMore}}{{/allParams}}, completion: (result: NetworkResult<{{#returnType}}{{{return_typeCamel}}}{{/returnType}}{{^returnType}}Void{{/returnType}}>) -> Void) {
         guard let authHeaders = Network.Header.standardIncludeAuth else {
             assertionFailure("Could not create an auth header")
             return
@@ -35,9 +35,9 @@ class {{classname}} {
         ]{{/hasMore}}{{/queryParams}}
         let parameters = APIHelper.rejectNil(nillableParameters){{/bodyParam}}
 
-        let request = NetworkRequestorWithResultType<{{#returnType}}{{{returnType}}}{{/returnType}}>(method: "{{httpMethod}}", URL: url, headers: authHeaders, parameters: parameters as! [String : AnyObject])
+        let request = NetworkRequestorWithResultType<{{#returnType}}{{{return_typeCamel}}}{{/returnType}}>(method: "{{httpMethod}}", URL: url, headers: authHeaders, parameters: parameters as! [String : AnyObject])
 
-        request.sendWithResult { (result: NetworkResult<{{#returnType}}{{{returnType}}}{{/returnType}}>) -> Void in
+        request.sendWithResult { (result: NetworkResult<{{#returnType}}{{{return_typeCamel}}}{{/returnType}}>) -> Void in
             completion(result: result)
         }
     }

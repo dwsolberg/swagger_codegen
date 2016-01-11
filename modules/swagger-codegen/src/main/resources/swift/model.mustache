@@ -30,9 +30,10 @@ class {{classname}}: NSObject, JSONEncodable, NSCoding {
         return dictionary
     }
 
-    // MARK: - Initializer
+    // MARK: - Initializer(s)
 {{#shouldInitForRequiredVars}}    convenience init({{#vars}}{{#required}}{{name}}: {{{datatype}}}{{#hasMore}}, {{/hasMore}}{{/required}}{{/vars}}) {
-{{#vars}}{{#required}}       self.{{name}} = {{name}}
+        self.init()
+{{#vars}}{{#required}}        self.{{name}} = {{name}}
 {{/required}}{{/vars}}    }{{/shouldInitForRequiredVars}}
 
     override init() { }

@@ -10,10 +10,15 @@ class AuthAPI {
     
     static let oauthURLString = "http://dev.myibucketlist.com/oauth/token"
     static let url = NSURL(string: oauthURLString)!
+    static private(set) var isRefreshingToken = false
     
     /// Creates and securely saves a token if one exists from the account. Check the result for success to determine whether a token was granted.
     static func authorizeAccount(account: Account, completion: (result: NetworkResult<Oauth_info>) -> Void) {
-        
+        guard isRefreshingToken == false else {
+            assertionFailure("Should not happen!")
+            return
+        }
+        isRefreshingToken = true
         let parameters =
         [
             "grant_type":Network.OAuth.grant_type_password,
@@ -33,7 +38,11 @@ class AuthAPI {
     static func refreshToken(completion: (result: NetworkResult<Oauth_info>) -> Void) -> Bool {
 
         guard let refreshtoken = Token.refresh else { return false }
-        
+        guard isRefreshingToken == false else {
+            assertionFailure("Should not happen!")
+            return false
+        }
+        isRefreshingToken = true
         let parameters =
         [
             "grant_type":Network.OAuth.grant_type_refresh,
@@ -57,6 +66,8 @@ class AuthAPI {
                 Token.refresh = refreshToken
             }
         }
+        isRefreshingToken = false
+        NSNotificationCenter.defaultCenter().postNotificationName(Constants.Notification.TokenRefreshed, object: nil)
         completion(result: result)
     }
 }

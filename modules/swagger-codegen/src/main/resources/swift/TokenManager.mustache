@@ -22,6 +22,11 @@ struct Token {
         set { setToken(newValue, account: refreshToken) }
     }
 
+    static func reset() {
+        header = nil
+        refresh = nil
+    }
+    
     // MARK: - Private Methods/Variables
     
     private static let service = "TokenService"

@@ -31,7 +31,6 @@ public class Response<T> {
     }
 }
 
-private var once = dispatch_once_t()
 class Decoders {
     static private var decoders = Dictionary<String, ((AnyObject) -> AnyObject)>()
     
@@ -55,7 +54,9 @@ class Decoders {
     }
     
     static func decode<T>(clazz clazz: T.Type, source: AnyObject) -> T {
-        initialize()
+        if self.decoders.count == 0 {
+           initialize()
+        }
         if source is T {
             return source as! T
         }
@@ -96,37 +97,15 @@ class Decoders {
     }
 	
     static private func initialize() {
-        dispatch_once(&once) {
-            let formatters = [
-                "yyyy-MM-dd",
-                "yyyy-MM-dd'T'HH:mm:ssZZZZZ",
-                "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ",
-                "yyyy-MM-dd'T'HH:mm:ss'Z'"
-            ].map { (format: String) -> NSDateFormatter in
-                let formatter = NSDateFormatter()
-                formatter.dateFormat = format
-                return formatter
-            }
-            // Decoder for NSDate
-            Decoders.addDecoder(clazz: NSDate.self) { (source: AnyObject) -> NSDate in
-                let sourceString = source as! String
-                for formatter in formatters {
-                    if let date = formatter.dateFromString(sourceString) {
-                        return date
-                    }
-                }
-                fatalError("formatter failed to parse \(sourceString)")
-            } {{#models}}{{#model}}
+            {{#models}}{{#model}}
 
 			// Decoder for {{{classname}}}
             Decoders.addDecoder(clazz: {{{classname}}}.self) { (source: AnyObject) -> {{{classname}}} in
                 let sourceDictionary = source as! [NSObject:AnyObject]
-                let instance = {{classname}}(){{#vars}}{{#isEnum}}
-                instance.{{name}} = (sourceDictionary["{{name}}"] as? String).map { {{classname}}.{{datatypeWithEnum}}(rawValue: $0)! }{{#unwrapRequired}}{{#required}}!{{/required}}{{/unwrapRequired}} {{/isEnum}}{{^isEnum}}
-                instance.{{name}} = Decoders.decode{{^unwrapRequired}}Optional{{/unwrapRequired}}{{#unwrapRequired}}{{^required}}Optional{{/required}}{{/unwrapRequired}}(clazz: {{{baseType}}}.self, source: sourceDictionary["{{name}}"]{{#unwrapRequired}}{{#required}}!{{/required}}{{/unwrapRequired}}){{/isEnum}}{{/vars}}
+                let instance: {{classname}} = {{classname}}(){{#vars}}
+                instance.{{name}} = Decoders.decode{{^unwrapRequired}}Optional{{/unwrapRequired}}{{#unwrapRequired}}{{^required}}Optional{{/required}}{{/unwrapRequired}}(clazz: {{{baseType}}}.self, source: sourceDictionary["{{name}}"]{{#unwrapRequired}}{{#required}}!{{/required}}{{/unwrapRequired}}) as {{{datatype}}}{{^required}}?{{/required}}{{#required}}!{{/required}}{{/vars}}
                 return instance
             }{{/model}}
 			{{/models}}
         }
-    }
 }

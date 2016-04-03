@@ -22,8 +22,6 @@ import java.util.regex.Pattern;
 
 public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
   private static final Pattern PATH_PARAM_PATTERN = Pattern.compile("\\{[a-zA-Z_]+\\}");
-  protected static final String LIBRARY_PROMISE_KIT = "PromiseKit";
-  protected static final String[] RESPONSE_LIBRARIES = { LIBRARY_PROMISE_KIT };
   protected String projectName = "SwaggerClient";
   protected boolean unwrapRequired = false;
   protected String[] responseAs = new String[0];
@@ -90,23 +88,21 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
     typeMapping.put("DateTime", "NSDate");
     typeMapping.put("boolean", "Bool");
     typeMapping.put("string", "String");
-    typeMapping.put("char", "Character");
+    typeMapping.put("char", "String");
     typeMapping.put("short", "Int");
     typeMapping.put("int", "Int");
     typeMapping.put("long", "Int");
     typeMapping.put("integer", "Int");
     typeMapping.put("Integer", "Int");
-    typeMapping.put("float", "Float");
+    typeMapping.put("float", "Double");
     typeMapping.put("number", "Double");
     typeMapping.put("double", "Double");
     typeMapping.put("object", "String");
-    typeMapping.put("file", "NSURL");
+    typeMapping.put("file", "NSData");
 
     importMapping = new HashMap<String, String>();
 
     cliOptions.add(new CliOption("projectName", "Project name in Xcode"));
-    cliOptions.add(new CliOption("responseAs", "Optionally use libraries to manage response.  Currently " +
-            StringUtils.join(RESPONSE_LIBRARIES, ", ") + " are available."));
     cliOptions.add(new CliOption("unwrapRequired", "Treat 'required' properties in response as non-optional " +
             "(which would crash the app if api returns null as opposed to required option specified in json schema"));
     cliOptions.add(new CliOption("podSource", "Source information used for Podspec"));

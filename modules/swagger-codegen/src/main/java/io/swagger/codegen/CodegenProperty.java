@@ -39,6 +39,26 @@ public class CodegenProperty {
     public Map<String, Object> allowableValues;
     public CodegenProperty items;
 
+    // DWS Additions
+
+    // Whether to index the property in the database
+    public Boolean isIndexed; // x-indexed
+
+    // Whether the attached object(s) is a reference to another table
+    public Boolean referencesForeignTableByUUID; // x-references-foreign-table-by-uuid
+
+    // Whether the reference is a single uuid (false) or contains an array (true). If it contains an array, the reference will be a "many" relationship.
+    public Boolean isReferenceArray; // x-reference-array
+
+    // The table/model name that the property relates to
+    public String referencesTableName; // x-references-table-name
+
+    // The relation name for the referenced table (reference to Category object might be categories)
+    public String referencesRelationName; // x-references-relation-name
+
+    // This property keeps tracks of whether the object has been soft-deleted on the server.
+    public Boolean isDeletedOnServerProperty; // x-deleted-on-server-property
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {

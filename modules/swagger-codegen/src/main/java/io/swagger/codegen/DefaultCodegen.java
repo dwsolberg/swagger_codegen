@@ -563,13 +563,17 @@ public class DefaultCodegen {
         m.classVarName = toVarName(name);
         m.modelJson = Json.pretty(model);
 
+        // Check JSON for custom objects
         try {
             ObjectMapper mapper = new ObjectMapper();
             Map<String,Object> jsonData = mapper.readValue(m.modelJson, Map.class);
-            m.shouldInitForRequiredVars = (Boolean) jsonData.get("x-init-required");
-        } catch (IOException e) { 
-            System.err.println("Did not find x-init-required for model class: " + m.classname + " " + e.getMessage());
-        }
+            m.isInitRequired = (Boolean) jsonData.get("x-init-required");
+            m.isBuildCoreData = (Boolean) jsonData.get("x-build-core-data");
+            m.isProtocolUUIDType = (Boolean) jsonData.get("x-protocol-uuid-type");
+            m.isProtocolSortOrderType = (Boolean) jsonData.get("x-protocol-sort-order-type");
+            m.isProtocolNameType = (Boolean) jsonData.get("x-protocol-name-type");
+            m.isProtocolSoftDeletableType = (Boolean) jsonData.get("x-protocol-soft-deleteable-type");
+        } catch (IOException e) { }
 
         m.externalDocs = model.getExternalDocs();
         if (model instanceof ArrayModel) {
@@ -671,6 +675,18 @@ public class DefaultCodegen {
         property.defaultValue = toDefaultValue(p);
         property.jsonSchema = Json.pretty(p);
         property.isReadOnly = p.getReadOnly();
+
+        // Check JSON for custom code
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String,Object> jsonData = mapper.readValue(property.jsonSchema, Map.class);
+            property.isIndexed = (Boolean) jsonData.get("x-indexed");
+            property.referencesForeignTableByUUID = (Boolean) jsonData.get("x-references-foreign-table-by-uuid");
+            property.isReferenceArray = (Boolean) jsonData.get("x-reference-array");
+            property.referencesTableName = (String) jsonData.get("x-references-table-name");
+            property.referencesRelationName = (String) jsonData.get("x-references-relation-name");
+            property.isDeletedOnServerProperty = (Boolean) jsonData.get("x-deleted-on-server-property");
+        } catch (IOException e) {}
 
         String type = getSwaggerType(p);
         if (p instanceof AbstractNumericProperty) {

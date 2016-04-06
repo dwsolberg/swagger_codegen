@@ -9,8 +9,13 @@ import Foundation
 {{#description}}/// {{description}}{{/description}}
 class {{classname}}: NSObject, JSONEncodable, NSCoding {
 
+{{#isBuildCoreData}}Build Core Data{{/isBuildCoreData}}
+{{#isProtocolUUIDType}}UUID Protocol{{/isProtocolUUIDType}}
     // MARK: - Encoding/Decoding Keys
 {{#vars}}    let key_{{name}} = "{{name}}"
+{{#isIndexed}}isIndexed{{/isIndexed}}{{#referencesForeignTableByUUID}}
+References Foreign Table{{/referencesForeignTableByUUID}}{{#referencesTableName}}
+{{referencesTableName}}{{/referencesTableName}}
 {{/vars}}
 
     // MARK: - Variables
@@ -31,10 +36,10 @@ class {{classname}}: NSObject, JSONEncodable, NSCoding {
     }
 
     // MARK: - Initializer(s)
-{{#shouldInitForRequiredVars}}    convenience init({{#vars}}{{#required}}{{name}}: {{{datatype}}}{{#hasMore}}, {{/hasMore}}{{/required}}{{/vars}}) {
+{{#isInitRequired}}    convenience init({{#vars}}{{#required}}{{name}}: {{{datatype}}}{{#hasMore}}, {{/hasMore}}{{/required}}{{/vars}}) {
         self.init()
 {{#vars}}{{#required}}        self.{{name}} = {{name}}
-{{/required}}{{/vars}}    }{{/shouldInitForRequiredVars}}
+{{/required}}{{/vars}}    }{{/isInitRequired}}
 
     override init() { }
 
@@ -46,8 +51,17 @@ class {{classname}}: NSObject, JSONEncodable, NSCoding {
         }
 {{/vars}}    }
 
-    func encodeWithCoder(aCoder: NSCoder) {
-{{#vars}}        aCoder.encodeObject({{name}}, forKey: key_{{name}})
-{{/vars}}    }
-}{{/model}}
-{{/models}}
+    func encodeWithCoder(aCoder: NSCoder) { {{#vars}}
+aCoder.encodeObject({{name}}, forKey: key_{{name}}) {{/vars}}    }
+}{{#isBuildCoreData}}{{#isProtocolUUIDType}} extension {{classname}} {
+func createAndOrGetManagedObject(context: NSManagedObjectContext) {
+let cd{{classname}}: {{classname}}CD         if let existing =
+{{classname}}CD.objectForUuid(uuid, context: context) as? {{classname}}CD {
+cd{{classname}} = existing         } else {             if
+self.deleted_on_server == true { return }             cd{{classname}} =
+NSEntityDescription.insertNewObjectForEntityForName(String({{classname}}CD),
+inManagedObjectContext: context) as! {{classname}}CD         }
+{{#vars}}{{^referencesForeignTableByUUID}}        cd{{classname}}.{{name}} =
+{{name}}{{/referencesForeignTableByUUID}} {{#referencesForeignTableByUUID}}
+kjfkldaj fkfjdlkajfkldsa{{/referencesForeignTableByUUID}} {{/vars}}   }
+}{{/isProtocolUUIDType}}{{/isBuildCoreData}}{{/model}} {{/models}}

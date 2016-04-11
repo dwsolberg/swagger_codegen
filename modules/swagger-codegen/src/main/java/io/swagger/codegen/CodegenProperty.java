@@ -42,22 +42,25 @@ public class CodegenProperty {
     // DWS Additions
 
     // Whether to index the property in the database
-    public Boolean isIndexed; // x-indexed
+    public Boolean isIndexed; // x-is-indexed
 
     // Whether the attached object(s) is a reference to another table
-    public Boolean referencesForeignTableByUUID; // x-references-foreign-table-by-uuid
+    public Boolean isForeignTableReferenceByUUID; // x-is-foreign-table-reference-by-uuid
 
-    // Whether the reference is a single uuid (false) or contains an array (true). If it contains an array, the reference will be a "many" relationship.
-    public Boolean isReferenceArray; // x-reference-array
+    // Whether the reference is a single uuid (false) or contains an array (true). If it contains an array, the reference will be a "to many" relationship.
+    public Boolean isToManyReference; // x-is-to-many-reference
 
-    // The table/model name that the property relates to
-    public String referencesTableName; // x-references-table-name
+    // The table/model name that the property relates to. For example "Category"
+    public String referencesPropertyName; // x-references-property-name
 
     // The relation name for the referenced table (reference to Category object might be categories)
     public String referencesRelationName; // x-references-relation-name
 
+    // The inverse relation for Core Data
+    public String referenceInverseName; // x-reference-inverse-name
+
     // This property keeps tracks of whether the object has been soft-deleted on the server.
-    public Boolean isDeletedOnServerProperty; // x-deleted-on-server-property
+    public Boolean isDeletedOnServerProperty; // x-is-deleted-on-server-property
 
     @Override
     public boolean equals(Object obj) {

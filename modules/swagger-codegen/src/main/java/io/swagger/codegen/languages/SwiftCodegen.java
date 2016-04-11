@@ -153,6 +153,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
     supportingFiles.add(new SupportingFile("Models.mustache", sourceFolder, "Models.swift"));
     supportingFiles.add(new SupportingFile("NetworkHelper.mustache", sourceFolder, "NetworkHelper.swift"));
     supportingFiles.add(new SupportingFile("OAuthAPI.mustache", sourceFolder, "OAuthAPI.swift"));
+      supportingFiles.add(new SupportingFile("xcdatamodel.mustache", sourceFolder, "CoreData.xcdatamodel"));
   }
 
   @Override

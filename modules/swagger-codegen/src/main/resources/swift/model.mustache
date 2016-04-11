@@ -7,6 +7,7 @@
 import Foundation
 
 {{#description}}/// {{description}}{{/description}}
+@objc({{appName}}_{{classname}})
 class {{classname}}: NSObject, JSONEncodable, NSCoding {
 
 {{#isBuildCoreData}}Build Core Data{{/isBuildCoreData}}

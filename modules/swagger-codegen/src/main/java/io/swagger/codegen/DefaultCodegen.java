@@ -680,11 +680,12 @@ public class DefaultCodegen {
         try {
             ObjectMapper mapper = new ObjectMapper();
             Map<String,Object> jsonData = mapper.readValue(property.jsonSchema, Map.class);
-            property.isIndexed = (Boolean) jsonData.get("x-indexed");
-            property.referencesForeignTableByUUID = (Boolean) jsonData.get("x-references-foreign-table-by-uuid");
-            property.isReferenceArray = (Boolean) jsonData.get("x-reference-array");
-            property.referencesTableName = (String) jsonData.get("x-references-table-name");
+            property.isIndexed = (Boolean) jsonData.get("x-is-indexed");
+            property.isForeignTableReferenceByUUID = (Boolean) jsonData.get("x-is-foreign-table-reference-by-uuid");
+            property.isToManyReference = (Boolean) jsonData.get("x-is-to-many-reference");
+            property.referencesPropertyName = (String) jsonData.get("x-references-property-name");
             property.referencesRelationName = (String) jsonData.get("x-references-relation-name");
+            property.referenceInverseName = (String) jsonData.get("x-reference-inverse-name");
             property.isDeletedOnServerProperty = (Boolean) jsonData.get("x-deleted-on-server-property");
         } catch (IOException e) {}
 

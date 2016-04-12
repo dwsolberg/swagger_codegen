@@ -1,0 +1,51 @@
+// CoreDataBuilders.swift
+// API Version {{appVersion}}
+// Generated: {{generatedDate}}
+//
+
+import Foundation
+import CoreData
+
+protocol CoreDataBuildable {
+    associatedtype T: NSManagedObject
+    func createAndOrUpdateManagedObject(context: NSManagedObjectContext) -> T?
+}
+
+{{#models}}{{#model}}{{#isBuildCoreData}}{{#isProtocolUUIDType}}extension {{classname}}: CoreDataBuildable {
+    func createAndOrUpdateManagedObject(context: NSManagedObjectContext) -> {{classname}}CD?
+    {
+        let cd{{classname}}: {{classname}}CD
+        if let existing = {{classname}}CD.objectForUuid(uuid, context: context) as? {{classname}}CD {
+            cd{{classname}} = existing
+        } else { {{#isProtocolSoftDeletableType}}
+            if self.deleted_on_server == true { return nil }{{/isProtocolSoftDeletableType}}
+            cd{{classname}} = NSEntityDescription.insertNewObjectForEntityForName(String({{classname}}CD), inManagedObjectContext: context) as! {{classname}}CD
+        }
+
+{{#vars}}{{^isForeignTableReferenceByUUID}}        cd{{classname}}.{{name}} = {{name}}
+{{/isForeignTableReferenceByUUID}}
+{{#isForeignTableReferenceByUUID}}{{#isToManyReference}}
+        if let uuids = {{name}} as? [String] {
+            let objectArray = uuids.map({ (uuid: String) -> {{referencesPropertyName}}CD? in
+                return {{referencesPropertyName}}CD.objectForUuid(uuid, context: context) as! {{referencesPropertyName}}CD?
+                })
+            let flattened = objectArray.flatMap{ $0 }
+            assert(uuids.count == flattened.count, "Data integrity failure. The uuids \(uuids) could not be found for objects \(objectArray).")
+            cd{{classname}}.{{referencesRelationName}} = NSSet(array: objectArray)
+        }
+{{/isToManyReference}}
+{{^isToManyReference}}
+        if let uuid = {{name}} as? String {
+            if let object = {{referencesPropertyName}}CD.objectForUuid(uuid, context: context) as? {{referencesPropertyName}}CD {
+                cd{{classname}}.{{referencesRelationName}} = object
+            } else {
+                    assertionFailure("Data integrity failure. The uuid \(uuid) could not be found.")
+            }
+        }
+
+{{/isToManyReference}}{{/isForeignTableReferenceByUUID}}{{/vars}}
+        return {{classname}}CD
+    }
+}
+
+{{/isProtocolUUIDType}}{{/isBuildCoreData}}{{/model}}{{/models}}

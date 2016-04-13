@@ -1,0 +1,150 @@
+// CoreDataCommonalities.swift
+// API Version {{appVersion}}
+// Generated: {{generatedDate}}
+//
+
+import Foundation
+import CoreData
+
+// MARK - Conform to Protocols From Swagger
+{{#models}}{{#model}}{{#isBuildCoreData}}extension {{classname}}CD: Findable{{#isProtocolUUIDType}}, UUIDType{{/isProtocolUUIDType}}{{#isProtocolSortOrderType}}, SortOrderType{{/isProtocolSortOrderType}}{{#isProtocolNameType}}, NameType{{/isProtocolNameType}}{{#isProtocolSoftDeletableType}}, SoftDeletableType{{/isProtocolSoftDeletableType}} {}
+{{/isBuildCoreData}}{{/model}}{{/models}}
+
+// Findable Protocol - All Core Data Items are Findable
+@objc protocol Findable: class { }
+
+extension Findable {
+    static var allObjects: [Self] {
+        let fetch = NSFetchRequest(entityName: String(Self))
+        do {
+            let results = try DWSCoreDataStack.managedObjectContext().executeFetchRequest(fetch)
+            return results as! [Self]
+        } catch (let error) {
+            assertionFailure("\(error)")
+            return []
+        }
+    }
+}
+
+// SortOrderType Protocol - If the object has a sort_order
+@objc protocol SortOrderType: Findable {
+    var sort_order: Int64 { get set } // always setting integers to max in Core Data
+}
+
+extension SortOrderType {
+    static func sortedObjects(ascending ascending: Bool) -> [Self] {
+        let fetch = NSFetchRequest(entityName: String(Self))
+        do {
+            let sortDesc = NSSortDescriptor(key: "sort_order", ascending: ascending)
+            fetch.sortDescriptors = [sortDesc]
+            let results = try DWSCoreDataStack.managedObjectContext().executeFetchRequest(fetch)
+            return results as! [Self]
+        } catch (let error) {
+            assertionFailure("\(error)")
+            return []
+        }
+    }
+}
+
+// MARK: - Find items by UUID
+
+@objc protocol UUIDType: class {
+     var uuid: String? { get set }
+     static func objectForUuid(uuid: String, context: NSManagedObjectContext) -> NSManagedObject?
+     static func objectsForUuids(uuids: [String], context: NSManagedObjectContext) -> [NSManagedObject]?
+     static var entityName: String { get }
+}
+
+extension NSManagedObject {
+    static var entityName: String { return String(self) }
+    
+    static func objectForUuid(uuid: String, context: NSManagedObjectContext) -> NSManagedObject? {
+        let predUuid = NSPredicate(format: "uuid = %@", uuid)
+        let request = NSFetchRequest(entityName:entityName)
+        request.predicate = predUuid;
+        
+        do {
+            let results = try context.executeFetchRequest(request)
+            assert(results.count <= 1, "Never should have more than one uuid!")
+            if let object = results.first as? NSManagedObject {
+                return object
+            }
+        } catch (let error) {
+            assertionFailure("\(error)")
+        }
+        return nil
+    }
+    
+    static func objectsForUuids(uuids: [String], context: NSManagedObjectContext) -> [NSManagedObject]? {
+        let objects = uuids.map{ objectForUuid($0, context: context) }.flatMap{ $0 }
+        if objects.count > 0 {
+            return objects
+        } else {
+            return nil
+        }
+    }
+}
+
+// MARK: - Search by String in Object Name
+
+@objc protocol NameType: class {
+    var name: String? { get set }
+}
+
+extension NameType {
+    
+    static func objectsWithNameThatContainsString(aString: String) -> [Self] {
+        let fetch = NSFetchRequest(entityName: String(Self))
+        fetch.predicate = NSPredicate(format: "name CONTAINS[cd] %@", aString)
+        fetch.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+        do {
+            let results = try DWSCoreDataStack.managedObjectContext().executeFetchRequest(fetch)
+            return results as! [Self]
+        } catch (let error) {
+            assertionFailure("\(error)")
+            return []
+        }
+    }
+    
+    static func sortedObjectsByName(ascending ascending: Bool) -> [Self] {
+        let fetch = NSFetchRequest(entityName: String(Self))
+        do {
+            let sortDesc = NSSortDescriptor(key: "name", ascending: ascending)
+            fetch.sortDescriptors = [sortDesc]
+            let results = try DWSCoreDataStack.managedObjectContext().executeFetchRequest(fetch)
+            return results as! [Self]
+        } catch (let error) {
+            assertionFailure("\(error)")
+            return []
+        }
+    }
+
+}
+
+// MARK: - Find soft deleted items.
+
+@objc protocol SoftDeletableType {
+    var deleted_on_server: Bool { get set }
+}
+
+extension SoftDeletableType
+{
+    static func softDeletedObjects(context: NSManagedObjectContext) -> [Self] {
+        let fetch = NSFetchRequest(entityName: String(Self))
+        do {
+            fetch.predicate = NSPredicate(format: "deleted_on_server == %@", NSNumber(bool: true))
+            let results = try context.executeFetchRequest(fetch)
+            return results as! [Self]
+        } catch (let error) {
+            assertionFailure("\(error)")
+            return []
+        }
+    }
+}
+
+
+
+
+
+
+

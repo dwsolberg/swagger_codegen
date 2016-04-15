@@ -24,7 +24,7 @@ protocol CoreDataBuildable {
 
 {{#vars}}{{^isForeignTableReferenceByUUID}}        cd{{classname}}.{{name}} = {{name}}
 {{/isForeignTableReferenceByUUID}}
-{{#isForeignTableReferenceByUUID}}{{#isToManyReference}}
+{{#isForeignTableReferenceByUUID}}{{#isCreateTableLinkMethods}}{{#isToManyReference}}
         if let uuids = {{name}} as? [String] {
             let objectArray = uuids.map({ (uuid: String) -> {{referencesPropertyName}}CD? in
                 return {{referencesPropertyName}}CD.objectForUuid(uuid, context: context) as! {{referencesPropertyName}}CD?
@@ -43,7 +43,7 @@ protocol CoreDataBuildable {
             }
         }
 
-{{/isToManyReference}}{{/isForeignTableReferenceByUUID}}{{/vars}}
+{{/isToManyReference}}{{/isCreateTableLinkMethods}}{{/isForeignTableReferenceByUUID}}{{/vars}}
         return {{classname}}CD
     }
 }

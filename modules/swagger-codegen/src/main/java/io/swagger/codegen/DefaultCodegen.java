@@ -683,6 +683,7 @@ public class DefaultCodegen {
             property.isIndexed = (Boolean) jsonData.get("x-is-indexed");
             property.isForeignTableReferenceByUUID = (Boolean) jsonData.get("x-is-foreign-table-reference-by-uuid");
             property.isToManyReference = (Boolean) jsonData.get("x-is-to-many-reference");
+            property.isCreateTableLinkMethods = (Boolean) jsonData.get("x-is-enable-table-link-methods");
             property.referencesPropertyName = (String) jsonData.get("x-references-property-name");
             property.referencesRelationName = (String) jsonData.get("x-references-relation-name");
             property.referenceInverseName = (String) jsonData.get("x-reference-inverse-name");

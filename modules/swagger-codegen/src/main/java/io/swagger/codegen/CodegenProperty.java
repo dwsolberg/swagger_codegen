@@ -47,6 +47,9 @@ public class CodegenProperty {
     // Whether the attached object(s) is a reference to another table
     public Boolean isForeignTableReferenceByUUID; // x-is-foreign-table-reference-by-uuid
 
+    // Whether this table should link to a core data table. For example, we typically only want linking in one direction. For example, employees might load after stores, so during the employee setup, we link to stores, but when building stores, we don't try to link to employees because they haven't been loaded yet.
+    public Boolean isCreateTableLinkMethods; // x-is-enable-table-link-methods
+
     // Whether the reference is a single uuid (false) or contains an array (true). If it contains an array, the reference will be a "to many" relationship.
     public Boolean isToManyReference; // x-is-to-many-reference
 

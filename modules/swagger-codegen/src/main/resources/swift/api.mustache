@@ -6,7 +6,6 @@
 
 class {{classname}} {
 {{#operation}}
-
     /**{{#summary}}
      {{{summary}}}{{/summary}}
      - {{httpMethod}}: {{path}}{{#notes}}
@@ -20,10 +19,10 @@ class {{classname}} {
      */
 
     static func {{operationId}}({{#hasParams}}{{#allParams}}{{paramName}}{{#secondaryParam}}{{paramName}}{{/secondaryParam}}: {{{dataType}}}{{^required}}?{{/required}}{{#hasMore}}, {{/hasMore}}{{/allParams}}, {{/hasParams}}completion: (result: NetworkResult<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Void{{/returnType}}>) -> Void) {
-        guard let authHeaders = Network.Header.standardIncludeAuth else {
+{{#authMethods}}{{#isOAuth}}        guard let authHeaders = Network.Header.standardIncludeAuth else {
             assertionFailure("Could not create an auth header")
             return
-        }
+        }{{/isOAuth}}{{/authMethods}}
         {{^pathParams}}let{{/pathParams}}{{#pathParams}}{{^secondaryParam}}var{{/secondaryParam}}{{/pathParams}} path = "{{path}}"{{#pathParams}}
         path = path.stringByReplacingOccurrencesOfString("{{=<% %>=}}{<%paramName%>}<%={{ }}=%>", withString: "\({{paramName}})", options: .LiteralSearch, range: nil){{/pathParams}}
         let url = Network.urlForEndpoint(path){{#hasParams}}{{#bodyParam}}
@@ -35,7 +34,7 @@ class {{classname}} {
         ]{{/hasMore}}{{/queryParams}}
         let parameters = APIHelper.rejectNil(nillableParameters){{/bodyParam}}{{/hasParams}}
 
-        let request = NetworkRequestorWithResultType<{{#returnType}}{{{returnType}}}{{/returnType}}>(method: "{{httpMethod}}", URL: url, headers: authHeaders, parameters: {{#hasParams}}parameters{{/hasParams}}{{^hasParams}}nil{{/hasParams}})
+        let request = NetworkRequestorWithResultType<{{#returnType}}{{{returnType}}}{{/returnType}}>(method: "{{httpMethod}}", URL: url, headers: {{#authMethods}}{{#isOAuth}}authHeaders{{/isOAuth}}{{^isOAuth}}Network.Header.json{{/isOAuth}}{{/authMethods}}{{^authMethods}}Network.Header.json{{/authMethods}}, parameters: {{#hasParams}}parameters{{/hasParams}}{{^hasParams}}nil{{/hasParams}})
 
         request.sendWithResult { (result: NetworkResult<{{#returnType}}{{{returnType}}}{{/returnType}}>) -> Void in
             completion(result: result)

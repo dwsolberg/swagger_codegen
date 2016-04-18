@@ -20,7 +20,7 @@ import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
+public class CoreDataCodegen extends DefaultCodegen implements CodegenConfig {
   private static final Pattern PATH_PARAM_PATTERN = Pattern.compile("\\{[a-zA-Z_]+\\}");
   protected String projectName = "SwaggerClient";
   protected boolean unwrapRequired = false;
@@ -32,21 +32,17 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
   }
 
   public String getName() {
-    return "swift";
+    return "coredata";
   }
 
   public String getHelp() {
-    return "Generates a swift client library.";
+    return "Generates a CoreData client library.";
   }
 
-  public SwiftCodegen() {
+  public CoreDataCodegen() {
     super();
-    outputFolder = "generated-code" + File.separator + "swift";
-    modelTemplateFiles.put("model.mustache", ".swift");
-    apiTemplateFiles.put("api.mustache", ".swift");
-    templateDir = "swift";
-    apiPackage = File.separator + "APIs";
-    modelPackage = File.separator + "Models";
+    outputFolder = "generated-code" + File.separator + "coredata";
+    templateDir = "coredata";
 
     languageSpecificPrimitives = new HashSet<String>(
       Arrays.asList(
@@ -58,6 +54,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         "String",
         "Character")
     );
+
     defaultIncludes = new HashSet<String>(
       Arrays.asList(
         "NSDate",
@@ -68,6 +65,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         "Empty",
         "AnyObject")
     );
+
     reservedWords = new HashSet<String>(
       Arrays.asList(
         "class", "break", "as", "associativity", "deinit", "case", "dynamicType", "convenience", "enum", "continue",
@@ -78,46 +76,31 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         "struct", "override", "subscript", "postfix", "typealias", "precedence", "var", "prefix", "Protocol",
         "required", "right", "set", "Type", "unowned", "weak", "guard", "defer")
     );
-
+  
     typeMapping = new HashMap<String, String>();
-    typeMapping.put("array", "Array");
-    typeMapping.put("List", "Array");
-    typeMapping.put("map", "Dictionary");
-    typeMapping.put("date", "NSDate");
-    typeMapping.put("Date", "NSDate");
-    typeMapping.put("DateTime", "NSDate");
-    typeMapping.put("boolean", "Bool");
+    typeMapping.put("array", "Transformable");
+    typeMapping.put("List", "Transformable");
+    typeMapping.put("map", "Transformable");
+    typeMapping.put("date", "Date");
+    typeMapping.put("Date", "Date");
+    typeMapping.put("DateTime", "Date");
+    typeMapping.put("boolean", "Boolean");
     typeMapping.put("string", "String");
     typeMapping.put("char", "String");
-    typeMapping.put("short", "Int");
-    typeMapping.put("int", "Int");
-    typeMapping.put("long", "Int");
-    typeMapping.put("integer", "Int");
-    typeMapping.put("Integer", "Int");
+    typeMapping.put("short", "Integer 64");
+    typeMapping.put("int", "Integer 64");
+    typeMapping.put("long", "Integer 64");
+    typeMapping.put("integer", "Integer 64");
+    typeMapping.put("Integer", "Integer 64");
     typeMapping.put("float", "Double");
     typeMapping.put("number", "Double");
     typeMapping.put("double", "Double");
     typeMapping.put("object", "String");
-    typeMapping.put("file", "NSData");
-
+    typeMapping.put("file", "Binary");
+    
     importMapping = new HashMap<String, String>();
-
-    cliOptions.add(new CliOption("projectName", "Project name in Xcode"));
-    cliOptions.add(new CliOption("unwrapRequired", "Treat 'required' properties in response as non-optional " +
-            "(which would crash the app if api returns null as opposed to required option specified in json schema"));
-    cliOptions.add(new CliOption("podSource", "Source information used for Podspec"));
-    cliOptions.add(new CliOption("podVersion", "Version used for Podspec"));
-    cliOptions.add(new CliOption("podAuthors", "Authors used for Podspec"));
-    cliOptions.add(new CliOption("podSocialMediaURL", "Social Media URL used for Podspec"));
-    cliOptions.add(new CliOption("podDocsetURL", "Docset URL used for Podspec"));
-    cliOptions.add(new CliOption("podLicense", "License used for Podspec"));
-    cliOptions.add(new CliOption("podHomepage", "Homepage used for Podspec"));
-    cliOptions.add(new CliOption("podSummary", "Summary used for Podspec"));
-    cliOptions.add(new CliOption("podDescription", "Description used for Podspec"));
-    cliOptions.add(new CliOption("podScreenshots", "Screenshots used for Podspec"));
-    cliOptions.add(new CliOption("podDocumentationURL", "Documentation URL used for Podspec"));
   }
-
+  
   @Override
   public void processOpts() {
     super.processOpts();
@@ -146,29 +129,15 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
       }
     }
     additionalProperties.put("responseAs", responseAs);
-    supportingFiles.add(new SupportingFile("APIHelper.mustache", sourceFolder, "APIHelper.swift"));
-    supportingFiles.add(new SupportingFile("NetworkRequestor.mustache", sourceFolder, "NetworkRequestor.swift"));
-    supportingFiles.add(new SupportingFile("TokenManager.mustache", sourceFolder, "TokenManager.swift"));
-    supportingFiles.add(new SupportingFile("Extensions.mustache", sourceFolder, "Extensions.swift"));
-    supportingFiles.add(new SupportingFile("Models.mustache", sourceFolder, "Models.swift"));
-    supportingFiles.add(new SupportingFile("NetworkHelper.mustache", sourceFolder, "NetworkHelper.swift"));
-    supportingFiles.add(new SupportingFile("OAuthAPI.mustache", sourceFolder, "OAuthAPI.swift"));
-    supportingFiles.add(new SupportingFile("xcdatamodel.mustache", sourceFolder, "contents"));
+
+    supportingFiles.add(new SupportingFile("CoreDataBuilders.mustache", sourceFolder, "CoreDataBuilders.swift"));
+    supportingFiles.add(new SupportingFile("CoreDataChangeCheckers.mustache", sourceFolder, "CoreDataChangeCheckers.swift"));
+    supportingFiles.add(new SupportingFile("CoreDataCommonalities.mustache", sourceFolder, "CoreDataCommonalities.swift")); 
   }
 
   @Override
   public String escapeReservedWord(String name) {
     return "Swagger" + name;  // add an underscore to the name
-  }
-
-  @Override
-  public String modelFileFolder() {
-    return outputFolder + File.separator + sourceFolder + modelPackage().replace('.', File.separatorChar);
-  }
-
-  @Override
-  public String apiFileFolder() {
-    return outputFolder + File.separator + sourceFolder + apiPackage().replace('.', File.separatorChar);
   }
 
   @Override

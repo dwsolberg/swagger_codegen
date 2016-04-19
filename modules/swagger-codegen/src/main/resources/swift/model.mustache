@@ -52,8 +52,9 @@ References Foreign Table{{/referencesForeignTableByUUID}}{{#referencesTableName}
         }
 {{/vars}}    }
 
-    func encodeWithCoder(aCoder: NSCoder) { {{#vars}}
-aCoder.encodeObject({{name}}, forKey: key_{{name}}) {{/vars}}    }
+    func encodeWithCoder(aCoder: NSCoder) { 
+{{#vars}}        aCoder.encodeObject({{name}}, forKey: key_{{name}}) 
+{{/vars}}    }
 }{{#isBuildCoreData}}{{#isProtocolUUIDType}} extension {{classname}} {
 func createAndOrGetManagedObject(context: NSManagedObjectContext) {
 let cd{{classname}}: {{classname}}CD         if let existing =

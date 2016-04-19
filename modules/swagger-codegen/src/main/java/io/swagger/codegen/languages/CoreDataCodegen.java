@@ -25,7 +25,7 @@ public class CoreDataCodegen extends DefaultCodegen implements CodegenConfig {
   protected String projectName = "SwaggerClient";
   protected boolean unwrapRequired = false;
   protected String[] responseAs = new String[0];
-  protected String sourceFolder = "SwaggerGenerated";
+  protected String sourceFolder = "";
 
   public CodegenType getTag() {
     return CodegenType.CLIENT;
@@ -41,7 +41,7 @@ public class CoreDataCodegen extends DefaultCodegen implements CodegenConfig {
 
   public CoreDataCodegen() {
     super();
-    outputFolder = "generated-code" + File.separator + "coredata";
+    outputFolder = "CoreData";
     templateDir = "coredata";
 
     languageSpecificPrimitives = new HashSet<String>(
@@ -132,7 +132,9 @@ public class CoreDataCodegen extends DefaultCodegen implements CodegenConfig {
 
     supportingFiles.add(new SupportingFile("CoreDataBuilders.mustache", sourceFolder, "CoreDataBuilders.swift"));
     supportingFiles.add(new SupportingFile("CoreDataChangeCheckers.mustache", sourceFolder, "CoreDataChangeCheckers.swift"));
-    supportingFiles.add(new SupportingFile("CoreDataCommonalities.mustache", sourceFolder, "CoreDataCommonalities.swift")); 
+    supportingFiles.add(new SupportingFile("CoreDataCommonalities.mustache", sourceFolder, "CoreDataCommonalities.swift"));
+    supportingFiles.add(new SupportingFile("xcdatamodel.mustache", sourceFolder, "CoreData.xcdatamodeld/CoreData.xcdatamodel/contents"));
+
   }
 
   @Override
@@ -143,13 +145,9 @@ public class CoreDataCodegen extends DefaultCodegen implements CodegenConfig {
   @Override
   public String getTypeDeclaration(Property p) {
     if (p instanceof ArrayProperty) {
-      ArrayProperty ap = (ArrayProperty) p;
-      Property inner = ap.getItems();
-      return "[" + getTypeDeclaration(inner) + "]";
+      return "Transformable";
     } else if (p instanceof MapProperty) {
-      MapProperty mp = (MapProperty) p;
-      Property inner = mp.getAdditionalProperties();
-      return "[String:" + getTypeDeclaration(inner) + "]";
+      return "Transformable";
     }
     return super.getTypeDeclaration(p);
   }

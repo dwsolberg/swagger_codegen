@@ -1,0 +1,19 @@
+{{#models}}{{#model}}{{#isBuildCoreData}}//
+// {{classname}}CD.swift
+// API Version {{appVersion}}
+// Generated: {{generatedDate}}
+
+import Foundation
+import CoreData
+
+@objc({{classname}}CD)
+class {{classname}}CD: NSManagedObject {
+
+{{#vars}}{{^isForeignTableReferenceByUUID}}        @NSManaged var {{name}}: {{datatype}}{{^required}}?{{/required}}{{#required}}!{{/required}}
+{{/isForeignTableReferenceByUUID}}
+{{#isForeignTableReferenceByUUID}}{{#isToManyReference}}        @NSManaged var {{referencesRelationName}}: Set<{{referencesPropertyName}}CD>{{^required}}?{{/required}}{{#required}}!{{/required}}
+{{/isToManyReference}}
+{{^isToManyReference}}
+        @NSManaged var {{referencesRelationName}}: {{referencesPropertyName}}{{^required}}?{{/required}}{{#required}}!{{/required}}
+{{/isToManyReference}}{{/isForeignTableReferenceByUUID}}{{/vars}}
+}{{/isBuildCoreData}}{{/model}}{{/models}}

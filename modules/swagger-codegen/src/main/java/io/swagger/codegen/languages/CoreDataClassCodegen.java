@@ -42,7 +42,7 @@ public class CoreDataClassCodegen extends DefaultCodegen implements CodegenConfi
   public CoreDataClassCodegen() {
     super();
     outputFolder = "CoreDataClass";
-    modelTemplateFiles.put("model.mustache", ".swift");
+    modelTemplateFiles.put("model.mustache", "CD.swift");
     templateDir = "coredataclass";
 
     languageSpecificPrimitives = new HashSet<String>(

@@ -51,9 +51,7 @@ public class CoreDataClassCodegen extends DefaultCodegen implements CodegenConfi
         "Float",
         "Double",
         "Bool",
-        "Void",
-        "String",
-        "Character")
+        "Int64")
     );
 
     defaultIncludes = new HashSet<String>(

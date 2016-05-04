@@ -9,9 +9,22 @@ import CoreData
 @objc({{classname}}CD)
 class {{classname}}CD: NSManagedObject {
 
-{{#vars}}{{^isForeignTableReferenceByUUID}}        @NSManaged var {{name}}: {{datatype}}{{^required}}?{{/required}}{{#required}}!{{/required}}
-{{/isForeignTableReferenceByUUID}}
-{{#isForeignTableReferenceByUUID}}{{#isToManyReference}}        @NSManaged var {{referencesRelationName}}: Set<{{referencesPropertyName}}CD>{{^required}}?{{/required}}{{#required}}!{{/required}}
+{{#vars}}{{^isForeignTableReferenceByUUID}}{{^isPrimitiveType}}        @NSManaged var {{name}}: {{datatype}}{{^required}}?{{/required}}{{#required}}!{{/required}}
+{{/isPrimitiveType}}{{#isPrimitiveType}}        var {{name}}: {{datatype}}{{^required}}?{{/required}}{{#required}}!{{/required}} {
+            get {
+                willAccessValueForKey("{{name}}")
+                let value = primitiveValueForKey("{{name}}") as? {{datatype}}
+                didAccessValueForKey("{{name}}")
+                return value
+            }
+            set {
+                willChangeValueForKey("{{name}}")
+                let value: {{datatype}}? = newValue ?? nil
+                setPrimitiveValue(value, forKey: "{{name}}")
+                didChangeValueForKey("{{name}}")
+            }
+        }
+{{/isPrimitiveType}}{{/isForeignTableReferenceByUUID}}{{#isForeignTableReferenceByUUID}}{{#isToManyReference}}        @NSManaged var {{referencesRelationName}}: Set<{{referencesPropertyName}}CD>{{^required}}?{{/required}}{{#required}}!{{/required}}
 {{/isToManyReference}}
 {{^isToManyReference}}
         @NSManaged var {{referencesRelationName}}: {{referencesPropertyName}}{{^required}}?{{/required}}{{#required}}!{{/required}}

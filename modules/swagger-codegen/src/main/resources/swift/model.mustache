@@ -36,8 +36,12 @@ class {{classname}}: NSObject, JSONEncodable, NSCoding {
 {{#isInitRequired}}    convenience init({{#vars}}{{#required}}{{name}}: {{{datatype}}}{{#hasMore}}, {{/hasMore}}{{/required}}{{/vars}}) {
         self.init()
 {{#vars}}{{#required}}        self.{{name}} = {{name}}
-{{/required}}{{/vars}}    }{{/isInitRequired}}{{^isInitRequired}}
-    override init() { }{{/isInitRequired}}
+{{/required}}{{/vars}}    }
+
+    override init() {
+        super.init()
+    }
+    {{/isInitRequired}}
 
     // MARK: - NSCoding Protocol Methods
     required init?(coder aDecoder: NSCoder) {

@@ -25,17 +25,17 @@ protocol CoreDataBuildable {
 {{#vars}}{{^isForeignTableReferenceByUUID}}        cd{{classname}}.{{name}} = {{name}}
 {{/isForeignTableReferenceByUUID}}
 {{#isForeignTableReferenceByUUID}}{{#isCreateTableLinkMethods}}{{#isToManyReference}}
-        if let uuids = {{name}} as? [String] {
+        if let uuids = {{name}} {
             let objectArray = uuids.map({ (uuid: String) -> {{referencesPropertyName}}CD? in
                 return {{referencesPropertyName}}CD.objectForUuid(uuid, context: context) as! {{referencesPropertyName}}CD?
                 })
             let flattened = objectArray.flatMap{ $0 }
             assert(uuids.count == flattened.count, "Data integrity failure. The uuids \(uuids) could not be found for objects \(objectArray).")
-            cd{{classname}}.{{referencesRelationName}} = NSSet(array: objectArray)
+            cd{{classname}}.{{referencesRelationName}} = Set(flattened)
         }
 {{/isToManyReference}}
 {{^isToManyReference}}
-        if let uuid = {{name}} as? String {
+        if let uuid = {{name}} {
             if let object = {{referencesPropertyName}}CD.objectForUuid(uuid, context: context) as? {{referencesPropertyName}}CD {
                 cd{{classname}}.{{referencesRelationName}} = object
             } else {

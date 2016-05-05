@@ -13,14 +13,14 @@ protocol CoreDataChangeCheckable {
 {{#models}}{{#model}}{{#isBuildCoreData}}{{#isProtocolUUIDType}}extension {{classname}}: CoreDataChangeCheckable {
     func matchingCoreDataHasChanged() -> Bool
     {
-        guard let cd{{classname}} = {{classname}}CD.objectForUuid(uuid, context: context) as? {{classname}}CD else { 
+        guard let cd{{classname}} = {{classname}}CD.objectForUuid(uuid, context: NSManagedObjectContext) as? {{classname}}CD else { 
             return true
         }
 
 {{#vars}}{{^isForeignTableReferenceByUUID}}        guard cd{{classname}}.{{name}} == {{name}} else { return true}
 {{/isForeignTableReferenceByUUID}}
 {{#isForeignTableReferenceByUUID}}{{#isToManyReference}}
-        if let uuids = {{name}} as? [String] {
+        if let uuids = {{name}} {
             if cd{{classname}}.{{referencesRelationName}}.count != uuids.count { return true }
             for object in cd{{classname}}.{{referencesRelationName}} {
                 if !uuids.contains(object.uuid) {
@@ -32,7 +32,7 @@ protocol CoreDataChangeCheckable {
         }
 {{/isToManyReference}}
 {{^isToManyReference}}
-        if let uuid = {{name}} as? String {
+        if let uuid = {{name}} {
             if cd{{classname}}.{{referencesRelationName}}.uuid != uuid {
                 return true
             }

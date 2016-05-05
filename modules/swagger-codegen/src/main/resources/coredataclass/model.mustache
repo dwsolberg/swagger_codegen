@@ -28,6 +28,6 @@ class {{classname}}CD: NSManagedObject {
 {{/isPrimitiveType}}{{/isForeignTableReferenceByUUID}}{{#isForeignTableReferenceByUUID}}{{#isToManyReference}}        @NSManaged var {{referencesRelationName}}: Set<{{referencesPropertyName}}CD>{{^required}}?{{/required}}{{#required}}!{{/required}}
 {{/isToManyReference}}
 {{^isToManyReference}}
-        @NSManaged var {{referencesRelationName}}: {{referencesPropertyName}}{{^required}}?{{/required}}{{#required}}!{{/required}}
+        @NSManaged var {{referencesRelationName}}: {{referencesPropertyName}}CD{{^required}}?{{/required}}{{#required}}!{{/required}}
 {{/isToManyReference}}{{/isForeignTableReferenceByUUID}}{{/vars}}
 }{{/isBuildCoreData}}{{/model}}{{/models}}

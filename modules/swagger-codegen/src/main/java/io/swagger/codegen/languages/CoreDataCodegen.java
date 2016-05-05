@@ -87,11 +87,11 @@ public class CoreDataCodegen extends DefaultCodegen implements CodegenConfig {
     typeMapping.put("boolean", "Boolean");
     typeMapping.put("string", "String");
     typeMapping.put("char", "String");
-    typeMapping.put("short", "Integer 64");
-    typeMapping.put("int", "Integer 64");
-    typeMapping.put("long", "Integer 64");
-    typeMapping.put("integer", "Integer 64");
-    typeMapping.put("Integer", "Integer 64");
+    typeMapping.put("short", "Integer 32");
+    typeMapping.put("int", "Integer 32");
+    typeMapping.put("long", "Integer 32");
+    typeMapping.put("integer", "Integer 32");
+    typeMapping.put("Integer", "Integer 32");
     typeMapping.put("float", "Double");
     typeMapping.put("number", "Double");
     typeMapping.put("double", "Double");

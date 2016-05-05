@@ -11,6 +11,7 @@ class {{classname}}CD: NSManagedObject {
 
 {{#vars}}{{^isForeignTableReferenceByUUID}}{{^isPrimitiveType}}        @NSManaged var {{name}}: {{datatype}}{{^required}}?{{/required}}{{#required}}!{{/required}}
 {{/isPrimitiveType}}{{#isPrimitiveType}}        var {{name}}: {{datatype}}{{^required}}?{{/required}}{{#required}}!{{/required}} {
+            // Getters and setters required to make it possible to have optional primitive types.
             get {
                 willAccessValueForKey("{{name}}")
                 let value = primitiveValueForKey("{{name}}") as? {{datatype}}

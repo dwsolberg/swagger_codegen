@@ -50,8 +50,7 @@ public class CoreDataClassCodegen extends DefaultCodegen implements CodegenConfi
         "Int",
         "Float",
         "Double",
-        "Bool",
-        "Int64")
+        "Bool")
     );
 
     defaultIncludes = new HashSet<String>(
@@ -77,20 +76,20 @@ public class CoreDataClassCodegen extends DefaultCodegen implements CodegenConfi
     );
   
     typeMapping = new HashMap<String, String>();
-    typeMapping.put("array", "Transformable");
-    typeMapping.put("List", "Transformable");
-    typeMapping.put("map", "Transformable");
+    typeMapping.put("array", "[String]");
+    typeMapping.put("List", "[String]");
+    typeMapping.put("map", "[String:String]");
     typeMapping.put("date", "NSDate");
     typeMapping.put("Date", "NSDate");
     typeMapping.put("DateTime", "NSDate");
     typeMapping.put("boolean", "Bool");
     typeMapping.put("string", "String");
     typeMapping.put("char", "String");
-    typeMapping.put("short", "Int64");
-    typeMapping.put("int", "Int64");
-    typeMapping.put("long", "Int64");
-    typeMapping.put("integer", "Int64");
-    typeMapping.put("Integer", "Int64");
+    typeMapping.put("short", "Int");
+    typeMapping.put("int", "Int");
+    typeMapping.put("long", "Int");
+    typeMapping.put("integer", "Int");
+    typeMapping.put("Integer", "Int");
     typeMapping.put("float", "Double");
     typeMapping.put("number", "Double");
     typeMapping.put("double", "Double");
@@ -138,9 +137,13 @@ public class CoreDataClassCodegen extends DefaultCodegen implements CodegenConfi
   @Override
   public String getTypeDeclaration(Property p) {
     if (p instanceof ArrayProperty) {
-      return "Transformable";
+      ArrayProperty ap = (ArrayProperty) p;
+      Property inner = ap.getItems();
+      return "[" + getTypeDeclaration(inner) + "]";
     } else if (p instanceof MapProperty) {
-      return "Transformable";
+      MapProperty mp = (MapProperty) p;
+      Property inner = mp.getAdditionalProperties();
+      return "[String:" + getTypeDeclaration(inner) + "]";
     }
     return super.getTypeDeclaration(p);
   }

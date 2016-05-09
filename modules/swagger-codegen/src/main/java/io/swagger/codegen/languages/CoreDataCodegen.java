@@ -25,7 +25,7 @@ public class CoreDataCodegen extends DefaultCodegen implements CodegenConfig {
   protected String projectName = "SwaggerClient";
   protected boolean unwrapRequired = false;
   protected String[] responseAs = new String[0];
-  protected String sourceFolder = "";
+  protected String sourceFolder = "CoreDataBase";
 
   public CodegenType getTag() {
     return CodegenType.CLIENT;

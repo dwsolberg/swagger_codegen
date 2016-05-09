@@ -41,7 +41,9 @@ class {{classname}}: NSObject, JSONEncodable, NSCoding {
     override init() {
         super.init()
     }
-    {{/isInitRequired}}
+    {{/isInitRequired}}{{^isInitRequired}}          override init() {
+        super.init()
+    }{{/isInitRequired}}
 
     // MARK: - NSCoding Protocol Methods
     required init?(coder aDecoder: NSCoder) {

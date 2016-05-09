@@ -11,7 +11,7 @@ import CoreData
 {{/isBuildCoreData}}{{/model}}{{/models}}
 
 // Findable Protocol - All Core Data Items are Findable
-@objc protocol Findable: class { }
+protocol Findable: class { }
 
 extension Findable {
     static var allObjects: [Self] {
@@ -27,8 +27,8 @@ extension Findable {
 }
 
 // SortOrderType Protocol - If the object has a sort_order
-@objc protocol SortOrderType: Findable {
-    var sort_order: Int64 { get set } // always setting integers to max in Core Data
+protocol SortOrderType: Findable {
+    var sort_order: Int? { get set } // always setting integers to max in Core Data
 }
 
 extension SortOrderType {
@@ -49,7 +49,7 @@ extension SortOrderType {
 // MARK: - Find items by UUID
 
 @objc protocol UUIDType: class {
-     var uuid: String? { get set }
+     var uuid: String! { get set }
      static func objectForUuid(uuid: String, context: NSManagedObjectContext) -> NSManagedObject?
      static func objectsForUuids(uuids: [String], context: NSManagedObjectContext) -> [NSManagedObject]?
      static var entityName: String { get }
@@ -123,11 +123,11 @@ extension NameType {
 
 // MARK: - Find soft deleted items.
 
-@objc protocol SoftDeletableType {
-    var deleted_on_server: Bool { get set }
+protocol SoftDeletableType {
+    var deleted_on_server: Bool? { get set }
 }
 
-extension SoftDeletableType
+extension SoftDeletableType where Self: AnyObject
 {
     static func softDeletedObjects(context: NSManagedObjectContext) -> [Self] {
         let fetch = NSFetchRequest(entityName: String(Self))
@@ -141,10 +141,3 @@ extension SoftDeletableType
         }
     }
 }
-
-
-
-
-
-
-

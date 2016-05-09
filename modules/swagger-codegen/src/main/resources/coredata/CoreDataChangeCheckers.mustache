@@ -7,13 +7,13 @@ import Foundation
 import CoreData
 
 protocol CoreDataChangeCheckable {
-    func matchingCoreDataHasChanged() -> Bool
+    func matchingCoreDataHasChanged(context: NSManagedObjectContext) -> Bool
 }
 
 {{#models}}{{#model}}{{#isBuildCoreData}}{{#isProtocolUUIDType}}extension {{classname}}: CoreDataChangeCheckable {
-    func matchingCoreDataHasChanged() -> Bool
+    func matchingCoreDataHasChanged(context: NSManagedObjectContext) -> Bool
     {
-        guard let cd{{classname}} = {{classname}}CD.objectForUuid(uuid, context: NSManagedObjectContext) as? {{classname}}CD else { 
+        guard let cd{{classname}} = {{classname}}CD.objectForUuid(uuid, context: context) as? {{classname}}CD else { 
             return true
         }
 

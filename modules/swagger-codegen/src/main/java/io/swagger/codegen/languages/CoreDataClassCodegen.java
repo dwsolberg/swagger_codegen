@@ -25,7 +25,7 @@ public class CoreDataClassCodegen extends DefaultCodegen implements CodegenConfi
   protected String projectName = "SwaggerClient";
   protected boolean unwrapRequired = false;
   protected String[] responseAs = new String[0];
-  protected String sourceFolder = "CoreDataObjects";
+  protected String sourceFolder = "CoreDataModels";
 
   public CodegenType getTag() {
     return CodegenType.CLIENT;
@@ -42,7 +42,7 @@ public class CoreDataClassCodegen extends DefaultCodegen implements CodegenConfi
   public CoreDataClassCodegen() {
     super();
     outputFolder = "CoreDataClass";
-    modelTemplateFiles.put("model.mustache", "CD.swift");
+    // modelTemplateFiles.put("model.mustache", "CD.swift");
     templateDir = "coredataclass";
 
     languageSpecificPrimitives = new HashSet<String>(
@@ -127,6 +127,8 @@ public class CoreDataClassCodegen extends DefaultCodegen implements CodegenConfi
       }
     }
     additionalProperties.put("responseAs", responseAs);
+    
+    supportingFiles.add(new SupportingFile("model.mustache", sourceFolder, "CoreDataModels.swift"));
   }
 
   @Override

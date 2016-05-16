@@ -17,7 +17,7 @@ extension Findable {
     static var allObjects: [Self] {
         let fetch = NSFetchRequest(entityName: String(Self))
         do {
-            let results = try DWSCoreDataStack.managedObjectContext().executeFetchRequest(fetch)
+            let results = try CDStack.context.executeFetchRequest(fetch)
             return results as! [Self]
         } catch (let error) {
             assertionFailure("\(error)")
@@ -37,7 +37,7 @@ extension SortOrderType {
         do {
             let sortDesc = NSSortDescriptor(key: "sort_order", ascending: ascending)
             fetch.sortDescriptors = [sortDesc]
-            let results = try DWSCoreDataStack.managedObjectContext().executeFetchRequest(fetch)
+            let results = try CDStack.context.executeFetchRequest(fetch)
             return results as! [Self]
         } catch (let error) {
             assertionFailure("\(error)")
@@ -98,7 +98,7 @@ extension NameType {
         fetch.predicate = NSPredicate(format: "name CONTAINS[cd] %@", aString)
         fetch.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
         do {
-            let results = try DWSCoreDataStack.managedObjectContext().executeFetchRequest(fetch)
+            let results = try CDStack.context.executeFetchRequest(fetch)
             return results as! [Self]
         } catch (let error) {
             assertionFailure("\(error)")
@@ -111,7 +111,7 @@ extension NameType {
         do {
             let sortDesc = NSSortDescriptor(key: "name", ascending: ascending)
             fetch.sortDescriptors = [sortDesc]
-            let results = try DWSCoreDataStack.managedObjectContext().executeFetchRequest(fetch)
+            let results = try CDStack.context.executeFetchRequest(fetch)
             return results as! [Self]
         } catch (let error) {
             assertionFailure("\(error)")

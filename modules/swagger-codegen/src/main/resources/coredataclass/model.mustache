@@ -1,10 +1,13 @@
-{{#models}}{{#model}}{{#isBuildCoreData}}//
-// {{classname}}CD.swift
 // API Version {{appVersion}}
 // Generated: {{generatedDate}}
 
 import Foundation
 import CoreData
+{{#models}}{{#model}}{{#isBuildCoreData}}
+
+//
+// -------------- {{classname}}CD --------------
+//
 
 @objc({{classname}}CD)
 class {{classname}}CD: NSManagedObject {

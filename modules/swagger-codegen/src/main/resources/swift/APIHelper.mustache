@@ -4,6 +4,8 @@
 // https://github.com/swagger-api/swagger-codegen
 //
 
+import UIKit
+
 class APIHelper {
     static func rejectNil(source: [String:AnyObject?]) -> [String:AnyObject]? {
         var destination = [String:AnyObject]()
@@ -35,3 +37,5 @@ extension NSHTTPURLResponse {
         return (self.statusCode > 199 && self.statusCode < 401) ? true : false
     }
 }
+
+static let NotificationNameTokenRefresh = "TokenRefreshed"

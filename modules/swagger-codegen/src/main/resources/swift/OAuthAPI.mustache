@@ -67,7 +67,7 @@ class AuthAPI {
             }
         }
         isRefreshingToken = false
-        NSNotificationCenter.defaultCenter().postNotificationName(Constants.Notification.TokenRefreshed, object: nil)
+        NSNotificationCenter.defaultCenter().postNotificationName(NotificationNameTokenRefresh, object: nil)
         completion(result: result)
     }
 }

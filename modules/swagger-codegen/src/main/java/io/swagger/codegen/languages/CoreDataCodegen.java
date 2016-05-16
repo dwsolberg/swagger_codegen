@@ -131,11 +131,9 @@ public class CoreDataCodegen extends DefaultCodegen implements CodegenConfig {
     additionalProperties.put("responseAs", responseAs);
 
     supportingFiles.add(new SupportingFile("CoreDataBuilders.mustache", sourceFolder, "CoreDataBuilders.swift"));
-    supportingFiles.add(new SupportingFile("CoreDataChangeCheckers.mustache", sourceFolder, "CoreDataChangeCheckers.swift"));
     supportingFiles.add(new SupportingFile("CoreDataCommonalities.mustache", sourceFolder, "CoreDataCommonalities.swift"));
     supportingFiles.add(new SupportingFile("xcdatamodel.mustache", sourceFolder, "CoreData.xcdatamodeld/CoreData.xcdatamodel/contents"));
-    supportingFiles.add(new SupportingFile("DWSCoreDataStack.h", sourceFolder, "DWSCoreDataStack.h"));
-    supportingFiles.add(new SupportingFile("DWSCoreDataStack.m", sourceFolder, "DWSCoreDataStack.m"));
+    supportingFiles.add(new SupportingFile("CDStack.mustache", sourceFolder, "CDStack.swift"));
   }
 
   @Override

@@ -9,7 +9,7 @@ import Foundation
 {{#description}}/// {{description}}{{/description}}
 @objc({{appName}}_{{classname}})
 {{#isBuildCoreData}}// Has Matching Core Data{{/isBuildCoreData}}
-class {{classname}}: NSObject, JSONEncodable, NSCoding {
+class {{classname}}: SwaggerType {
 
     // MARK: - Encoding/Decoding Keys
 {{#vars}}    let key_{{name}} = "{{name}}"

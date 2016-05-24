@@ -7,8 +7,7 @@ import Foundation
 import CoreData
 
 protocol CoreDataToSwaggerBuildable {
-    associatedtype T: JSONEncodable
-    func asSwaggerModel() -> T
+    func asSwaggerModel() -> SwaggerType
 }
 
 {{#models}}{{#model}}{{#isBuildCoreData}}{{#isProtocolUUIDType}}extension {{classname}}CD: CoreDataToSwaggerBuildable {

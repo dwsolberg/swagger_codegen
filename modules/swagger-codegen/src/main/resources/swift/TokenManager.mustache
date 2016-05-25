@@ -27,6 +27,11 @@ struct Token {
         refresh = nil
     }
     
+    static func isReady() -> Bool {
+        // TODO: Add better checks later
+        return header != nil
+    }
+    
     // MARK: - Private Methods/Variables
     
     private static let service = "TokenService"

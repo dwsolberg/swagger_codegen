@@ -83,13 +83,18 @@ class CDStack
             return
         }
         
-        // Don't need to merge changes from our own context
-        if callContext.isEqual(CDStack.context) {
-            return
+        let checkAndMergeBlock = {
+            if !callContext.isEqual(CDStack.context) { // Don't need to merge changes from our own context
+                CDStack.context.mergeChangesFromContextDidSaveNotification(notification)
+            }
         }
         
-        dispatch_async(dispatch_get_main_queue()) {
-            CDStack.context.mergeChangesFromContextDidSaveNotification(notification)
+        if NSThread.isMainThread() {
+            checkAndMergeBlock()
+        } else {
+            dispatch_sync(dispatch_get_main_queue(), { 
+                checkAndMergeBlock()
+            })
         }
     }
     

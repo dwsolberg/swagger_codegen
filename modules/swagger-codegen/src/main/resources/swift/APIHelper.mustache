@@ -22,16 +22,6 @@ class APIHelper {
     }
 }
 
-// From  http://stackoverflow.com/questions/24034544/dispatch-after-gcd-in-swift/24318861#24318861
-func delay(delay:Double, closure: () -> Void ) {
-    dispatch_after(
-        dispatch_time(
-            DISPATCH_TIME_NOW,
-            Int64(delay * Double(NSEC_PER_SEC))
-        ),
-        dispatch_get_main_queue(), closure)
-}
-
 extension NSHTTPURLResponse {
     var isValid: Bool {
         return (self.statusCode > 199 && self.statusCode < 401) ? true : false

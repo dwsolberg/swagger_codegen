@@ -11,8 +11,7 @@ enum NetworkError: ErrorType {
     case NonHTTPResponse
 }
 
-public class NetworkRequestorWithResultType<T>
-{
+public class NetworkRequestorWithResultType<T> {
     let headers: [String:String]
     let parameters: [String:AnyObject]?
     let method: String
@@ -126,8 +125,7 @@ public class NetworkRequestorWithResultType<T>
 		success(decodedJSON)
 	}
 
-    private func generateRequest() -> NSURLRequest?
-    {
+    func generateRequest() -> NSURLRequest?{
 		let cachePolicy: NSURLRequestCachePolicy = (Reachability.isConnectedToNetwork()) ? .ReturnCacheDataElseLoad : .ReturnCacheDataDontLoad
 
         let request : NSMutableURLRequest = NSMutableURLRequest(URL: url, cachePolicy: cachePolicy, timeoutInterval: 120)

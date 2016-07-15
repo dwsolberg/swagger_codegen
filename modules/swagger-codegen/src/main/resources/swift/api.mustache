@@ -18,7 +18,7 @@ class {{classname}} {
      - returns: NetworkResult<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Void{{/returnType}}> {{description}}
      */
 
-    static func {{operationId}}({{#hasParams}}{{#allParams}}{{paramName}}{{#secondaryParam}}{{paramName}}{{/secondaryParam}}: {{{dataType}}}{{^required}}?{{/required}}{{#hasMore}}, {{/hasMore}}{{/allParams}}, {{/hasParams}}completion: (result: NetworkResult<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Void{{/returnType}}>) -> Void) {
+    static func {{operationId}}({{#hasParams}}{{#allParams}}{{paramName}}{{#secondaryParam}}{{paramName}}{{/secondaryParam}}: {{{dataType}}}{{^required}}?{{/required}}{{#hasMore}}, {{/hasMore}}{{/allParams}}, {{/hasParams}}success: ({{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Void{{/returnType}}?) -> (), failure: (ErrorType) -> ()) {
 {{#authMethods}}{{#isOAuth}}        guard let authHeaders = Network.Header.standardIncludeAuth else {
             assertionFailure("Could not create an auth header")
             return
@@ -34,11 +34,9 @@ class {{classname}} {
         ]{{/hasMore}}{{/queryParams}}
         let parameters = APIHelper.rejectNil(nillableParameters){{/bodyParam}}{{/hasParams}}
 
-        let request = NetworkRequestorWithResultType<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Void{{/returnType}}>(method: "{{httpMethod}}", URL: url, headers: {{#authMethods}}{{#isOAuth}}authHeaders{{/isOAuth}}{{^isOAuth}}Network.Header.json{{/isOAuth}}{{/authMethods}}{{^authMethods}}Network.Header.json{{/authMethods}}, parameters: {{#hasParams}}parameters{{/hasParams}}{{^hasParams}}nil{{/hasParams}})
+        let request = NetworkRequestorWithResultType<{{#returnType}}{{{returnType}}}{{/returnType}}>(method: "{{httpMethod}}", URL: url, headers: {{#authMethods}}{{#isOAuth}}authHeaders{{/isOAuth}}{{^isOAuth}}Network.Header.json{{/isOAuth}}{{/authMethods}}{{^authMethods}}Network.Header.json{{/authMethods}}, parameters: {{#hasParams}}parameters{{/hasParams}}{{^hasParams}}nil{{/hasParams}})
 
-        request.sendWithResult { (result: NetworkResult<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Void{{/returnType}}>) -> Void in
-            completion(result: result)
-        }
+		request.sendWithResult(success, failure: failure)
     }
 {{/operation}}
 }

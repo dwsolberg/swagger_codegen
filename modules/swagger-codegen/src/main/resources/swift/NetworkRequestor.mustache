@@ -11,19 +11,14 @@ enum NetworkError: ErrorType {
     case NonHTTPResponse
 }
 
-enum NetworkResult<T> {
-    case Success(T?)
-    case Failure(ErrorType)
-}
-
-class NetworkRequestorWithResultType<T>
+public class NetworkRequestorWithResultType<T>
 {
     let headers: [String:String]
     let parameters: [String:AnyObject]?
     let method: String
     let url: NSURL
     
-    required init(method: String, URL: NSURL, headers: [String:String], parameters: [String:AnyObject]?) {
+    required public init(method: String, URL: NSURL, headers: [String:String], parameters: [String:AnyObject]?) {
         self.method = method
         self.url = URL
         self.headers = headers
@@ -31,31 +26,31 @@ class NetworkRequestorWithResultType<T>
     }
     
     /// All calls return on the the main queue
-    func sendWithResult(completion: (result: NetworkResult<T>) -> Void) -> Bool
-    {
+	func sendWithResult(success: T? -> (), failure: ErrorType -> ()) -> Bool {
         guard let request = generateRequest() else { return false }
         let configuration = NSURLSessionConfiguration.defaultSessionConfiguration()
-        configuration.URLCache = nil
+        configuration.URLCache = NSURLCache.sharedURLCache()
         let session = NSURLSession(configuration: configuration)
         
         session.dataTaskWithRequest(request) { (data: NSData?, response: NSURLResponse?, error: NSError?) -> Void in
             
             // Handle Apple Error Cases
-            guard error == nil else {
-                let result = NetworkResult<T>.Failure(error!)
-                NetworkRequestorWithResultType<T>.resultOnMainQueue(result, completion: completion)
+            if let error = error{
+                assertionFailure("We got an error \(error)")
+				delay(error, closure: failure)
                 return
             }
             
             // Make sure it's an http response (it should be if we got to this point, but we have to check)
             guard let httpResponse = response as? NSHTTPURLResponse else {
-                let result = NetworkResult<T>.Failure(NetworkError.NonHTTPResponse)
-                NetworkRequestorWithResultType<T>.resultOnMainQueue(result, completion: completion)
+                assertionFailure("We were expecting an http response, but instead got: \(response)")
+				delay(NetworkError.NonHTTPResponse, closure: failure)
                 return
             }
             
             // Handle Invalid Status Codes along with error response
             guard httpResponse.isValid else {
+                assertionFailure("We got an invalid response code \(httpResponse.statusCode)")
                 let errorInfo: AnyObject?
                 if let data = data {
                     if let json = try? NSJSONSerialization.JSONObjectWithData(data, options: [NSJSONReadingOptions.AllowFragments]) {
@@ -67,62 +62,46 @@ class NetworkRequestorWithResultType<T>
                     errorInfo = nil
                 }
                 let httpError = NetworkError.InvalidCode(httpResponse.statusCode, errorInfo)
-                let result = NetworkResult<T>.Failure(httpError)
-                NetworkRequestorWithResultType<T>.resultOnMainQueue(result, completion: completion)
+				delay(httpError, closure: failure)
                 return
             }
             
-            let result = NetworkRequestorWithResultType<T>.handleData(data)
-            NetworkRequestorWithResultType<T>.resultOnMainQueue(result, completion: completion)
+            // Success when no response is expected -- type is <Void>
+            if () is T {
+				delay(nil, closure: success)
+                return   
+            }
             
-            }.resume()
+            // Handle any missing data - we should have data at this point
+            guard let data = data else {
+                let error = NetworkError.MissingData
+				delay(error, closure: failure)
+                return
+            }
+
+            // Handle invalid JSON
+            guard let json: AnyObject = try? NSJSONSerialization.JSONObjectWithData(data, options: [NSJSONReadingOptions.AllowFragments])
+                else {
+                    let string = NSString(data: data, encoding: NSUTF8StringEncoding)
+                    let error = NetworkError.MissingJSON(string as String?)
+					delay(error, closure: failure)
+                    return
+            }
+            
+            // Return the decoded object
+			let decodedJSON: T = Decoders.decode(json)
+			delay(decodedJSON, closure: success)
+            
+        }.resume()
         
         return true
     }
-    
-    static func handleData(data: NSData?) -> NetworkResult<T> {
-        
-        if () is T {
-            let result = NetworkResult<T>.Success(nil)
-            return result
-        }
-        
-        if data is T {
-            let result = NetworkResult<T>.Success(data as? T)
-            return result
-        }
-        
-        // Handle any missing data - we should have data at this point
-        guard let data = data else {
-            let error = NetworkError.MissingData
-            let result = NetworkResult<T>.Failure(error)
-            return result
-        }
-        
-        // Handle invalid JSON
-        guard let json: AnyObject = try? NSJSONSerialization.JSONObjectWithData(data, options: [NSJSONReadingOptions.AllowFragments])
-            else {
-                let string = NSString(data: data, encoding: NSUTF8StringEncoding)
-                let error = NetworkError.MissingJSON(string as String?)
-                let result = NetworkResult<T>.Failure(error)
-                return result
-        }
-        
-        // Return the decoded object
-        let decodedJSON = Decoders.decode(clazz: T.self, source: json)
-        let result = NetworkResult<T>.Success(decodedJSON)
-        return result
-    }
-    
-    static func resultOnMainQueue(result: NetworkResult<T>, completion: (result: NetworkResult<T>) -> Void) {
-        delay(0) { () -> Void in
-            completion(result: result)
-        }
-    }
-    
-    func generateRequest() -> NSURLRequest?
+
+    private func generateRequest() -> NSURLRequest?
     {
-        let request : NSMutableURLRequest = NSMutableURLRequest(URL: url, cachePolicy: NSURLRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData, timeoutInterval: 120)
+		let cachePolicy: NSURLRequestCachePolicy = (Reachability.isConnectedToNetwork()) ? .ReturnCacheDataElseLoad : .ReturnCacheDataDontLoad
+
+        let request : NSMutableURLRequest = NSMutableURLRequest(URL: url, cachePolicy: cachePolicy, timeoutInterval: 120)
         request.HTTPMethod = method
         if self.headers.count > 0 { request.allHTTPHeaderFields = headers }
         if let parameters = self.parameters where parameters.count > 0 {
@@ -138,5 +117,5 @@ class NetworkRequestorWithResultType<T>
         }
         return request
     }
-    
+
 }

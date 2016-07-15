@@ -5,6 +5,7 @@
 
 class {{classname}} {
 {{#operation}}
+
     /**{{#summary}}
      {{{summary}}}{{/summary}}
      - {{httpMethod}}: {{path}}{{#notes}}
@@ -16,26 +17,11 @@ class {{classname}} {
      - parameter: {{paramName}}: (type: {{#isFormParam}}form{{/isFormParam}}{{#isQueryParam}}query{{/isQueryParam}}{{#isPathParam}}path{{/isPathParam}}{{#isHeaderParam}}header{{/isHeaderParam}}{{#isBodyParam}}body{{/isBodyParam}}) {{description}}{{/allParams}}{{/hasParams}}
      - returns: NetworkResult<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Void{{/returnType}}> {{description}}
      */
-
-    static func {{operationId}}({{#hasParams}}{{#allParams}}{{paramName}}{{#secondaryParam}}{{paramName}}{{/secondaryParam}}: {{{dataType}}}{{^required}}?{{/required}}{{#hasMore}}, {{/hasMore}}{{/allParams}}, {{/hasParams}}success: ({{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Void{{/returnType}}?) -> (), failure: (ErrorType) -> ()) {
-{{#authMethods}}{{#isOAuth}}        guard let authHeaders = Network.Header.standardIncludeAuth else {
-            assertionFailure("Could not create an auth header")
-            return
-        }{{/isOAuth}}{{/authMethods}}
+    static func {{operationId}}({{#hasParams}}{{#allParams}}{{paramName}}{{#secondaryParam}}{{paramName}}{{/secondaryParam}}: {{{dataType}}}{{^required}}?{{/required}}{{#hasMore}}, {{/hasMore}}{{/allParams}}, {{/hasParams}}success: ({{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Void {{/returnType}}?) -> (), failure: (ErrorType) -> ()) {
         {{^pathParams}}let{{/pathParams}}{{#pathParams}}{{^secondaryParam}}var{{/secondaryParam}}{{/pathParams}} path = "{{path}}"{{#pathParams}}
-        path = path.stringByReplacingOccurrencesOfString("{{=<% %>=}}{<%paramName%>}<%={{ }}=%>", withString: "\({{paramName}})", options: .LiteralSearch, range: nil){{/pathParams}}
-        let url = Network.urlForEndpoint(path){{#hasParams}}{{#bodyParam}}
-        let parameters = {{paramName}}{{^required}}?{{/required}}.encodeToJSON() as! [String : AnyObject]{{/bodyParam}}{{^bodyParam}}
-        let nillableParameters: [String:AnyObject?] = {{^queryParams}}{{^formParams}}[:]{{/formParams}}{{#formParams}}{{^secondaryParam}}[{{/secondaryParam}}
-            "{{paramName}}": {{paramName}}{{#hasMore}},{{/hasMore}}{{^hasMore}}
-        ]{{/hasMore}}{{/formParams}}{{/queryParams}}{{#queryParams}}{{^secondaryParam}}[{{/secondaryParam}}
-            "{{paramName}}": {{paramName}}{{#hasMore}},{{/hasMore}}{{^hasMore}}
-        ]{{/hasMore}}{{/queryParams}}
-        let parameters = APIHelper.rejectNil(nillableParameters){{/bodyParam}}{{/hasParams}}
-
-        let request = NetworkRequestorWithResultType<{{#returnType}}{{{returnType}}}{{/returnType}}>(method: "{{httpMethod}}", URL: url, headers: {{#authMethods}}{{#isOAuth}}authHeaders{{/isOAuth}}{{^isOAuth}}Network.Header.json{{/isOAuth}}{{/authMethods}}{{^authMethods}}Network.Header.json{{/authMethods}}, parameters: {{#hasParams}}parameters{{/hasParams}}{{^hasParams}}nil{{/hasParams}})
-
-		request.sendWithResult(success, failure: failure)
+	    path = path.stringByReplacingOccurrencesOfString("{{=<% %>=}}{<%paramName%>}<%={{ }}=%>", withString: "\({{paramName}})", options: .LiteralSearch, range: nil){{/pathParams}}
+		
+		APIHelper.genericCall({{#authMethods}}{{^isOAuth}}requiresOauth: false, headers: Network.Header.json, {{/isOAuth}}{{/authMethods}}path: path, body: body, success: success, failure: failure)
     }
 {{/operation}}
 }

@@ -20,6 +20,24 @@ class APIHelper {
         }
         return destination
     }
+	
+	static func genericCall<Body: JSONEncodable, Return: JSONEncodable>(requiresOauth: Bool = true, headers: [String:String] = [:], path: String, body: Body, success: (Return?) -> (), failure: (ErrorType) -> ()) {
+
+			var mutableHeaders = headers
+			if requiresOauth {
+				guard let authHeaders = Network.Header.standardIncludeAuth else {
+					assertionFailure("Could not create an auth header")
+					return
+				}
+				mutableHeaders.unionInPlace(authHeaders)
+			}
+			let url = Network.urlForEndpoint(path)
+			let parameters = body.encodeToJSON() as! [String : AnyObject]
+
+			let request = NetworkRequestorWithResultType<Return>(method: "POST", URL: url, headers: mutableHeaders, parameters: parameters)
+
+			request.sendWithResult(success, failure: failure)
+		}
 }
 
 extension NSHTTPURLResponse {
@@ -29,3 +47,20 @@ extension NSHTTPURLResponse {
 }
 
 let NotificationNameTokenRefresh = "TokenRefreshed"
+
+extension Dictionary {
+	mutating func unionInPlace(
+		dictionary: Dictionary<Key, Value>) {
+		for (key, value) in dictionary {
+			self[key] = value
+		}
+	}
+
+	// Thanks Airspeed Velocity
+	mutating func unionInPlace<S: SequenceType where
+		S.Generator.Element == (Key,Value)>(sequence: S) {
+		for (key, value) in sequence {
+			self[key] = value
+		}
+	}
+}

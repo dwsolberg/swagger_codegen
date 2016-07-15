@@ -671,7 +671,7 @@ public class DefaultCodegen {
         property.unescapedDescription = p.getDescription();
         property.getter = "get" + getterAndSetterCapitalize(name);
         property.setter = "set" + getterAndSetterCapitalize(name);
-        property.example = p.getExample();
+        property.example = (String) p.getExample();
         property.defaultValue = toDefaultValue(p);
         property.jsonSchema = Json.pretty(p);
         property.isReadOnly = p.getReadOnly();

@@ -13,7 +13,7 @@ class AuthAPI {
     static private(set) var isRefreshingToken = false
     
     /// Creates and securely saves a token if one exists from the account. Check the result for success to determine whether a token was granted.
-    static func authorizeAccount(account: Account, completion: (result: NetworkResult<Oauth_info>) -> Void) {
+    static func authorizeAccount(account: Account, body: Account, success: (Oauth_info?) -> (), failure: (ErrorType) -> ()) {
         guard isRefreshingToken == false else {
             assertionFailure("Should not happen!")
             return
@@ -28,14 +28,12 @@ class AuthAPI {
             "client_secret":Network.OAuth.client_secret
         ]
         
-        NetworkRequestorWithResultType<Oauth_info>.init(method: "POST", URL: url, headers: Network.Header.json, parameters: parameters).sendWithResult { (result: NetworkResult<Oauth_info>) -> Void in
-            processResult(result, completion: completion)
-        }
+		NetworkRequestorWithResultType<Oauth_info>.init(method: "POST", URL: url, headers: Network.Header.json, parameters: parameters).sendWithResult({processSuccess($0, success: success)}, failure: {processFailure($0, failure: failure)})
     }
     
 
     /// Refreshes the existing token if there is one. If no token exists, returns false. Also check the completion block to see whether the refresh was successful.
-    static func refreshToken(completion: (result: NetworkResult<Oauth_info>) -> Void) -> Bool {
+    static func refreshToken(success: (Oauth_info?) -> (), failure: (ErrorType) -> ()) -> Bool {
 
         guard let refreshtoken = Token.refresh else { return false }
         guard isRefreshingToken == false else {
@@ -49,25 +47,30 @@ class AuthAPI {
             "refresh_token":refreshtoken
         ]
         
-        NetworkRequestorWithResultType<Oauth_info>.init(method: "POST", URL: url, headers: Network.Header.json, parameters: parameters).sendWithResult { (result: NetworkResult<Oauth_info>) -> Void in
-                processResult(result, completion: completion)
-        }
+        NetworkRequestorWithResultType<Oauth_info>.init(method: "POST", URL: url, headers: Network.Header.json, parameters: parameters).sendWithResult({processSuccess($0, success: success)}, failure: {processFailure($0, failure: failure)})
         return true
     }
-    
-    // MARK: - Helpers
-    static func processResult(result: NetworkResult<Oauth_info>, completion: (result: NetworkResult<Oauth_info>) -> Void) {
-        // Store the token if found
-        if case NetworkResult.Success(let info) = result {
-            if let accessToken = info?.access_token {
-                Token.header = accessToken
-            }
-            if let refreshToken = info?.refresh_token {
-                Token.refresh = refreshToken
-            }
-        }
-        isRefreshingToken = false
-        NSNotificationCenter.defaultCenter().postNotificationName(NotificationNameTokenRefresh, object: nil)
-        completion(result: result)
-    }
+
+	static func processFailure(error: ErrorType, failure: (ErrorType) -> ()) {
+		isRefreshingToken = false
+		NSNotificationCenter.defaultCenter().postNotificationName(NotificationNameTokenRefresh, object: nil)
+		failure(error)
+	}
+
+	static func processSuccess(info: Oauth_info?, success: (Oauth_info?) -> ()) {
+
+		if let accessToken = info?.access_token {
+			Token.header = accessToken
+		}
+		if let refreshToken = info?.refresh_token {
+			Token.refresh = refreshToken
+		}
+		isRefreshingToken = false
+		NSNotificationCenter.defaultCenter().postNotificationName(NotificationNameTokenRefresh, object: nil)
+		success(info)
+	}
 }
+
+
+
+

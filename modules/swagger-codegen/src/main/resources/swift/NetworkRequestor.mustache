@@ -97,6 +97,35 @@ public class NetworkRequestorWithResultType<T>
         return true
     }
 
+    static func handleData(data: NSData?, success: (T?) -> (), failure: (ErrorType) -> ()){
+
+		if () is T {
+			success(nil)
+			return
+		}
+
+		else if let tData =  data as? T {
+			success(tData)
+		}
+
+		// Handle any missing data - we should have data at this point
+		guard let data = data else {
+			failure(NetworkError.MissingData)
+			return
+		}
+
+		// Handle invalid JSON
+		guard let json: AnyObject = try? NSJSONSerialization.JSONObjectWithData(data, options: [NSJSONReadingOptions.AllowFragments]) else {
+				let string = NSString(data: data, encoding: NSUTF8StringEncoding)
+				failure(NetworkError.MissingJSON(string as String?))
+				return
+		}
+
+		// Return the decoded object
+		let decodedJSON: T = Decoders.decode(json)
+		success(decodedJSON)
+	}
+
     private func generateRequest() -> NSURLRequest?
     {
 		let cachePolicy: NSURLRequestCachePolicy = (Reachability.isConnectedToNetwork()) ? .ReturnCacheDataElseLoad : .ReturnCacheDataDontLoad

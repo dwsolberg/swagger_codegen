@@ -37,8 +37,19 @@ class Decoders {
     static func addDecoder<T>(decoder: ((AnyObject) -> T)) {
         let key = "\(T.self)"
         decoders[key] = { decoder($0) as! AnyObject }
+
+		// This adds a decoder for an array of these objects
+		addArrayDecoder { (source: AnyObject) -> Array<T> in
+			let sourceArray = source as! [AnyObject]
+			return sourceArray.map {return decode($0)}
+		}
     }
-    
+
+	static func addArrayDecoder<T>(decoder: ((AnyObject) -> T)) {
+		let key = "\(T.self)"
+		decoders[key] = { decoder($0) as! AnyObject }
+	}
+
     static func decodeDictionary<T, Key: Hashable>(source: AnyObject) -> [Key:T] {
         let sourceDictionary = source as! [Key: AnyObject]
         var dictionary = [Key:T]()
@@ -59,7 +70,9 @@ class Decoders {
         let key = "\(T.self)"
         if let decoder = decoders[key] {
            return decoder(source) as! T
-        } else {
+        }
+
+		else {
             fatalError("Source \(source) is not convertible to type \(String(T.Type)): Maybe swagger file is insufficient")
         }
     }
@@ -68,30 +81,20 @@ class Decoders {
         if source is NSNull {
             return nil
         }
-        return source.map { (source: AnyObject) -> T in
-            Decoders.decode(source)
-        }
-    }
-
-    static func decode<T, Key: Hashable>(source: AnyObject?) -> [Key:T]? {
-        if source is NSNull {
-            return nil
-        }
-        return source.map { (someSource: AnyObject) -> [Key:T] in
-            Decoders.decodeDictionary(someSource)
-        }
+		
+        return source.map(Decoders.decode)
     }
 	
     static private func initialize() {
-            {{#models}}{{#model}}
+        {{#models}}{{#model}}
 
-			// Decoder for {{{classname}}}
-            Decoders.addDecoder() { (source: AnyObject) -> {{{classname}}} in
-                let sourceDictionary = source as! [NSObject:AnyObject]
-                let instance: {{classname}} = {{classname}}(){{#vars}}
-                instance.{{name}} = Decoders.decode(sourceDictionary["{{name}}"]){{/vars}}
-                return instance
-            }{{/model}}
-			{{/models}}
-        }
+        // Decoder for {{{classname}}}
+        Decoders.addDecoder() { (source: AnyObject) -> {{{classname}}} in
+            let sourceDictionary = source as! [NSObject:AnyObject]
+            let instance: {{classname}} = {{classname}}(){{#vars}}
+            instance.{{name}} = Decoders.decode(sourceDictionary["{{name}}"]){{/vars}}
+            return instance
+        }{{/model}}
+        {{/models}}
+    }
 }

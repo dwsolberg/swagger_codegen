@@ -96,7 +96,7 @@ public class NetworkRequestorWithResultType<T> {
         return true
     }
 
-    static func handleData(data: NSData?, success: (T?) -> (), failure: (ErrorType) -> ()){
+    static func handleData(data: NSData?, success: (T?) -> (), failure: (ErrorType) -> ()) {
 
 		if () is T {
 			success(nil)
@@ -125,12 +125,13 @@ public class NetworkRequestorWithResultType<T> {
 		success(decodedJSON)
 	}
 
-    func generateRequest() -> NSURLRequest?{
-		let cachePolicy: NSURLRequestCachePolicy = (Reachability.isConnectedToNetwork()) ? .ReturnCacheDataElseLoad : .ReturnCacheDataDontLoad
-
+    func generateRequest() -> NSURLRequest? {
+		
+        let cachePolicy: NSURLRequestCachePolicy = .ReloadIgnoringLocalCacheData
         let request : NSMutableURLRequest = NSMutableURLRequest(URL: url, cachePolicy: cachePolicy, timeoutInterval: 120)
         request.HTTPMethod = method
         if self.headers.count > 0 { request.allHTTPHeaderFields = headers }
+
         if let parameters = self.parameters where parameters.count > 0 {
             let encoded = parameters.encodeToJSON()
             let bodyData: NSData
@@ -144,5 +145,4 @@ public class NetworkRequestorWithResultType<T> {
         }
         return request
     }
-
 }

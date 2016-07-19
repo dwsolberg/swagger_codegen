@@ -83,6 +83,10 @@ extension NSManagedObject {
             return nil
         }
     }
+	
+	static func classedObjectForUuid<T: NSManagedObject>(uuid: String, context: NSManagedObjectContext) -> T? {
+		return objectForUuid(uuid, context: context) as? T
+	}
 }
 
 // MARK: - Search by String in Object Name

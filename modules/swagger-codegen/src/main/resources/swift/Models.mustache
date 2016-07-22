@@ -39,9 +39,15 @@ class Decoders {
         decoders[key] = { decoder($0) as! AnyObject }
 
 		// This adds a decoder for an array of these objects
-		addArrayDecoder { (source: AnyObject) -> Array<T> in
-			let sourceArray = source as! [AnyObject]
-			return sourceArray.map {return decode($0)}
+		addArrayDecoder { (source: AnyObject) -> [T] in
+			if let sourceDictionary = source as? [String: AnyObject] {
+				let singleItem: T = decode(sourceDictionary)
+				return [singleItem]
+			}
+			else {
+				let sourceArray = source as! [AnyObject]
+				return sourceArray.map {return decode($0)}
+			}
 		}
     }
 

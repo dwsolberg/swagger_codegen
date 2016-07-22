@@ -1,6 +1,5 @@
 // CoreDataBuilders.swift
 // API Version {{appVersion}}
-// Generated: {{generatedDate}}
 //
 
 import Foundation
@@ -12,8 +11,7 @@ protocol CoreDataBuildable {
 }
 
 {{#models}}{{#model}}{{#isBuildCoreData}}{{#isProtocolUUIDType}}extension {{classname}}: CoreDataBuildable {
-    func createAndOrUpdateManagedObject(context: NSManagedObjectContext) -> {{classname}}CD?
-    {
+    func createAndOrUpdateManagedObject(context: NSManagedObjectContext) -> {{classname}}CD? {
         let cd{{classname}}: {{classname}}CD
         if let existing = {{classname}}CD.objectForUuid(uuid, context: context) as? {{classname}}CD {
             cd{{classname}} = existing

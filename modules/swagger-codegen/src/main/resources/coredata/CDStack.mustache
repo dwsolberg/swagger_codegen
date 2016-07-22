@@ -24,13 +24,12 @@ class CDStack
     
     /// The main thread managed object context. This context will automatically merge changes from other threads property by property, keeping whatever is saved in the persistent store vs. in-memory. In other words, if another context saves something, it will override whatever's in memory.
     static var context: NSManagedObjectContext {
-        precondition(NSThread.isMainThread(), "This context is only for the main thread. Use childContextForPrivateQueue() for other threads.")
+//        precondition(NSThread.isMainThread(), "This context is only for the main thread. Use childContextForPrivateQueue() for other threads.")
         return internalInstance.context
     }
     
     /// Returns a child context from the main thread context. This context resolves merge issues by favoring what's in memory, so whatever you change in this context will win even if a different context has saved something else.
-    static func childContextForPrivateQueue() -> NSManagedObjectContext
-    {
+    static func childContextForPrivateQueue() -> NSManagedObjectContext {
         let parent = self.context
         let context = NSManagedObjectContext(concurrencyType: .PrivateQueueConcurrencyType)
         context.parentContext = parent

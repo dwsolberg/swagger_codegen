@@ -19,32 +19,42 @@ func +(lhs: [String:String], rhs: [String:String]) -> [String:String] {
 
 struct Network {
 
+	#if DEBUG
 	static let basePath = "http://equineassistant.node.acts.media"
-		static let mainAPIPath = basePath + "/api/v1"
+	#elseif RELEASE
+	static let basePath = "http://equineassistant.node.acts.media"
+	#elseif ADHOC
+	static let basePath = "http://equineassistant.node.acts.media"
+	#else
+	static let basePath = "http://equineassistant.node.acts.media"
+	#endif
+	static let mainAPIPath = basePath + "/api/v1"
 
-	    // Note: The programmer needs to manually enter the client_id and secret 
-	    struct OAuth {
-	        static let grant_type_password = "password"
-	        static let grant_type_refresh = "refresh_token"
-	        static let client_id = "8976456fd1748005b33adf517d2676957721a4d230203b2067f9d4b6c647275a"
-	        static let client_secret = "2db5814cfe60307d7379cf8fe0e99024409e4b27852c361dfd537a9223fca1c7"
-	    }
-    
-	    static func urlForEndpoint(endpoint: String) -> NSURL {
-	        return NSURL(string: Network.mainAPIPath + endpoint)!
-	    }
-    
-	    struct Header {
-	        static let json = ["Content-Type":"application/json"]
-        
-	        static func auth() -> [String:String]? {
-	            guard let token = Token.header else { return nil }
-	            return ["Authorization":"Bearer " + token, "Content-Type":"application/json"]
-	        }
-        
-	        static var standardIncludeAuth: [String:String]? {
-	            guard let auth = Network.Header.auth() else { return nil }
-	            return Network.Header.json + auth
-	        }
-	    }
+
+
+	// Note: The programmer needs to manually enter the client_id and secret
+	struct OAuth {
+		static let grant_type_password = "password"
+		static let grant_type_refresh = "refresh_token"
+		static let client_id = "8976456fd1748005b33adf517d2676957721a4d230203b2067f9d4b6c647275a"
+		static let client_secret = "2db5814cfe60307d7379cf8fe0e99024409e4b27852c361dfd537a9223fca1c7"
+	}
+
+	static func urlForEndpoint(endpoint: String) -> NSURL {
+		return NSURL(string: Network.mainAPIPath + endpoint)!
+	}
+
+	struct Header {
+		static let json = ["Content-Type":"application/json"]
+	
+		static func auth() -> [String:String]? {
+			guard let token = Token.header else { return nil }
+			return ["Authorization":"Bearer " + token, "Content-Type":"application/json"]
+		}
+	
+		static var standardIncludeAuth: [String:String]? {
+			guard let auth = Network.Header.auth() else { return nil }
+			return Network.Header.json + auth
+		}
+	}
 }

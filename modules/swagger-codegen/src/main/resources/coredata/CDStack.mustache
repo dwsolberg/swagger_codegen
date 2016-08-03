@@ -41,7 +41,7 @@ class CDStack
     
     // MARK: - Internal Instance Methods -
     
-    private static let internalInstance = CDStack()
+    private static var internalInstance = CDStack()
     
     private let context : NSManagedObjectContext
     private let coordinator: NSPersistentStoreCoordinator

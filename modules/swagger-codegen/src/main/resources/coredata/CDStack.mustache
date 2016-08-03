@@ -55,6 +55,11 @@ class CDStack
         registerForNotifications()
     }
     
+	static func resetDataBase() {
+		deleteExistingDatabase()
+		internalInstance = CDStack()
+	}
+	
     private static func deleteExistingDatabase()
     {
         do {

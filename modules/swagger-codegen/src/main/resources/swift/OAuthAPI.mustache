@@ -13,7 +13,7 @@ class AuthAPI {
     static private(set) var isRefreshingToken = false
     
     /// Creates and securely saves a token if one exists from the account. Check the result for success to determine whether a token was granted.
-    static func authorizeAccount(body: Account, success: (Oauth_info?) -> (), failure: (ErrorType) -> ()) {
+    static func authorizeAccount(body: User, success: (Oauth_info?) -> (), failure: (ErrorType) -> ()) {
         guard isRefreshingToken == false else {
             assertionFailure("Should not happen!")
             return

@@ -1,142 +1,150 @@
 //
 //  NetworkRequestor.swift
+//  Updated to Swift 3.01 on Nov 14, 2016
 //
 
 import Foundation
 
-enum NetworkError: ErrorType {
-    case InvalidCode(Int, AnyObject?)
-    case MissingData
-    case MissingJSON(String?)
-    case NonHTTPResponse
+enum NetworkError: Swift.Error {
+    case connectionIssue
+    case invalidCode(Int, AnyObject?)
+    case missingData
+    case missingJSON(String?)
+    case nonHTTPResponse
+    case unreadableJSON(AnyObject)
+    case couldNotParseJson
 }
 
 enum NetworkResult<T> {
-    case Success(T?)
-    case Failure(ErrorType)
+    case success(T?)
+    case failure(Swift.Error)
 }
 
 class NetworkRequestorWithResultType<T>
 {
     let headers: [String:String]
-    let parameters: [String:AnyObject]?
+    let parameters: [String:Any]?
     let method: String
-    let url: NSURL
-    
-    required init(method: String, URL: NSURL, headers: [String:String], parameters: [String:AnyObject]?) {
+    let url: URL
+
+    required init(method: String, URL: URL, headers: [String:String], parameters: [String:Any]?) {
         self.method = method
         self.url = URL
         self.headers = headers
         self.parameters = parameters
     }
-    
+
     /// All calls return on the the main queue
-    func sendWithResult(completion: (result: NetworkResult<T>) -> Void) -> Bool
+    func sendWithResult(completion: @escaping (_ result: NetworkResult<T>) -> Void) -> Bool
     {
         guard let request = generateRequest() else { return false }
-        let configuration = NSURLSessionConfiguration.defaultSessionConfiguration()
-        configuration.URLCache = nil
-        let session = NSURLSession(configuration: configuration)
-        
-        session.dataTaskWithRequest(request) { (data: NSData?, response: NSURLResponse?, error: NSError?) -> Void in
-            
+        let configuration = URLSessionConfiguration.default
+        configuration.urlCache = nil
+        let session = URLSession(configuration: configuration)
+
+        let task = session.dataTask(with: request, completionHandler: { (data, response, error) in
+
             // Handle Apple Error Cases
             guard error == nil else {
-                let result = NetworkResult<T>.Failure(error!)
+                let result = NetworkResult<T>.failure(error!)
                 NetworkRequestorWithResultType<T>.resultOnMainQueue(result, completion: completion)
                 return
             }
-            
+
             // Make sure it's an http response (it should be if we got to this point, but we have to check)
-            guard let httpResponse = response as? NSHTTPURLResponse else {
-                let result = NetworkResult<T>.Failure(NetworkError.NonHTTPResponse)
+            guard let httpResponse = response as? HTTPURLResponse else {
+                let result = NetworkResult<T>.failure(NetworkError.nonHTTPResponse)
                 NetworkRequestorWithResultType<T>.resultOnMainQueue(result, completion: completion)
                 return
             }
-            
+
             // Handle Invalid Status Codes along with error response
             guard httpResponse.isValid else {
                 let errorInfo: AnyObject?
                 if let data = data {
-                    if let json = try? NSJSONSerialization.JSONObjectWithData(data, options: [NSJSONReadingOptions.AllowFragments]) {
-                        errorInfo = json
+                    if let json = try? JSONSerialization.jsonObject(with: data, options: [JSONSerialization.ReadingOptions.allowFragments]) {
+                        errorInfo = json as AnyObject?
                     } else {
-                        errorInfo = NSString(data: data, encoding: NSUTF8StringEncoding)
+                        errorInfo = NSString(data: data, encoding: String.Encoding.utf8.rawValue)
                     }
                 } else {
                     errorInfo = nil
                 }
-                let httpError = NetworkError.InvalidCode(httpResponse.statusCode, errorInfo)
-                let result = NetworkResult<T>.Failure(httpError)
+                let httpError = NetworkError.invalidCode(httpResponse.statusCode, errorInfo)
+                let result = NetworkResult<T>.failure(httpError)
                 NetworkRequestorWithResultType<T>.resultOnMainQueue(result, completion: completion)
                 return
             }
-            
-            let result = NetworkRequestorWithResultType<T>.handleData(data)
+
+            let result = type(of: self).handleData(data)
             NetworkRequestorWithResultType<T>.resultOnMainQueue(result, completion: completion)
-            
-            }.resume()
-        
+
+        })
+        task.resume();
+
         return true
     }
-    
-    static func handleData(data: NSData?) -> NetworkResult<T> {
-        
+
+    static func handleData(_ data: Data?) -> NetworkResult<T> {
+
         if () is T {
-            let result = NetworkResult<T>.Success(nil)
+            let result = NetworkResult<T>.success(nil)
             return result
         }
-        
+
         if data is T {
-            let result = NetworkResult<T>.Success(data as? T)
+            let result = NetworkResult<T>.success(data as? T)
             return result
         }
-        
+
         // Handle any missing data - we should have data at this point
         guard let data = data else {
-            let error = NetworkError.MissingData
-            let result = NetworkResult<T>.Failure(error)
+            let error = NetworkError.missingData
+            let result = NetworkResult<T>.failure(error)
             return result
         }
-        
+
         // Handle invalid JSON
-        guard let json: AnyObject = try? NSJSONSerialization.JSONObjectWithData(data, options: [NSJSONReadingOptions.AllowFragments])
+        guard let json = try? JSONSerialization.jsonObject(with: data, options: [JSONSerialization.ReadingOptions.allowFragments]) as? [String: AnyObject]
             else {
-                let string = NSString(data: data, encoding: NSUTF8StringEncoding)
-                let error = NetworkError.MissingJSON(string as String?)
-                let result = NetworkResult<T>.Failure(error)
+                let string = NSString(data: data, encoding: String.Encoding.utf8.rawValue)
+                let error = NetworkError.missingJSON(string as String?)
+                let result = NetworkResult<T>.failure(error)
                 return result
         }
-        
+
+        guard let validJson = json else {
+            return NetworkResult.failure(NetworkError.couldNotParseJson)
+        }
+
         // Return the decoded object
-        let decodedJSON = Decoders.decode(clazz: T.self, source: json)
-        let result = NetworkResult<T>.Success(decodedJSON)
+        let decodedJSON = Decoders.decode(clazz: T.self, source: validJson as AnyObject)
+        let result = NetworkResult<T>.success(decodedJSON)
         return result
     }
-    
-    static func resultOnMainQueue(result: NetworkResult<T>, completion: (result: NetworkResult<T>) -> Void) {
-        delay(0) { () -> Void in
-            completion(result: result)
-        }
+
+    static func resultOnMainQueue(_ result: NetworkResult<T>, completion: @escaping (_ result: NetworkResult<T>) -> Void) {
+        runOnMainThreadAfterDelay(0) { completion(result) }
     }
-    
-    func generateRequest() -> NSURLRequest?
+
+    func generateRequest() -> URLRequest?
     {
-        let request : NSMutableURLRequest = NSMutableURLRequest(URL: url, cachePolicy: NSURLRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData, timeoutInterval: 120)
-        request.HTTPMethod = method
+        var request : URLRequest = URLRequest(url: url, cachePolicy: NSURLRequest.CachePolicy.reloadIgnoringLocalAndRemoteCacheData, timeoutInterval: 15)
+        request.httpMethod = method
         if self.headers.count > 0 { request.allHTTPHeaderFields = headers }
-        if let parameters = self.parameters where parameters.count > 0 {
+        if let parameters = self.parameters , parameters.count > 0 {
             let encoded = parameters.encodeToJSON()
-            let bodyData: NSData
+            let bodyData: Data
             do {
-                bodyData = try NSJSONSerialization.dataWithJSONObject(encoded, options: [])
+                bodyData = try JSONSerialization.data(withJSONObject: encoded, options: [])
             } catch {
                 assertionFailure("Could not create data out of parameters \(parameters)")
                 return nil
             }
-            request.HTTPBody = bodyData
+            request.httpBody = bodyData
         }
         return request
     }
+    
     
 }

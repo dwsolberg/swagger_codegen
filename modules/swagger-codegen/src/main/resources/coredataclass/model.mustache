@@ -16,16 +16,16 @@ class {{classname}}CD: NSManagedObject {
 {{/isPrimitiveType}}{{#isPrimitiveType}}        var {{name}}: {{datatype}}{{^required}}?{{/required}}{{#required}}!{{/required}} {
             // Getters and setters required to make it possible to have optional primitive types.
             get {
-                willAccessValueForKey("{{name}}")
-                let value = primitiveValueForKey("{{name}}") as? {{datatype}}
-                didAccessValueForKey("{{name}}")
+                willAccessValue(forKey: "{{name}}")
+                let value = primitiveValue(forKey: "{{name}}") as? {{datatype}}
+                didAccessValue(forKey: "{{name}}")
                 return value
             }
             set {
-                willChangeValueForKey("{{name}}")
+                willChangeValue(forKey: "{{name}}")
                 let value: {{datatype}}? = newValue ?? nil
                 setPrimitiveValue(value, forKey: "{{name}}")
-                didChangeValueForKey("{{name}}")
+                didChangeValue(forKey: "{{name}}")
             }
         }
 {{/isPrimitiveType}}{{/isForeignTableReferenceByUUID}}{{#isForeignTableReferenceByUUID}}{{#isToManyReference}}        @NSManaged var {{referencesRelationName}}: Set<{{referencesPropertyName}}CD>{{^required}}?{{/required}}{{#required}}!{{/required}}

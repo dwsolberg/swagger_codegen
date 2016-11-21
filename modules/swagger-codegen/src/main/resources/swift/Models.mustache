@@ -7,7 +7,7 @@
 import Foundation
 
 protocol JSONEncodable {
-    func encodeToJSON() -> AnyObject
+    func encodeToJSON() -> Any
 }
 
 public class Response<T> {
@@ -21,7 +21,7 @@ public class Response<T> {
         self.body = body
     }
 
-    public convenience init(response: NSHTTPURLResponse, body: T) {
+    public convenience init(response: HTTPURLResponse, body: T) {
         let rawHeader = response.allHeaderFields
         var header = [String:String]()
         for (key, value) in rawHeader {
@@ -32,66 +32,66 @@ public class Response<T> {
 }
 
 class Decoders {
-    static private var decoders = Dictionary<String, ((AnyObject) -> AnyObject)>()
-    
-    static func addDecoder<T>(clazz clazz: T.Type, decoder: ((AnyObject) -> T)) {
+    static fileprivate var decoders = Dictionary<String, ((Any) -> Any)>()
+
+    static func addDecoder<T>(clazz: T.Type, decoder: @escaping ((Any) -> T)) {
         let key = "\(T.self)"
-        decoders[key] = { decoder($0) as! AnyObject }
+        decoders[key] = { decoder($0) as Any }
     }
-    
-    static func decode<T>(clazz clazz: [T].Type, source: AnyObject) -> [T] {
-        let array = source as! [AnyObject]
+
+    static func decode<T>(clazz: [T].Type, source: Any) -> [T] {
+        let array = source as! [Any]
         return array.map { Decoders.decode(clazz: T.self, source: $0) }
     }
-    
-    static func decode<T, Key: Hashable>(clazz clazz: [Key:T].Type, source: AnyObject) -> [Key:T] {
-        let sourceDictinoary = source as! [Key: AnyObject]
+
+    static func decode<T, Key: Hashable>(clazz: [Key:T].Type, source: Any) -> [Key:T] {
+        let sourceDictinoary = source as! [Key: Any]
         var dictionary = [Key:T]()
         for (key, value) in sourceDictinoary {
             dictionary[key] = Decoders.decode(clazz: T.self, source: value)
         }
         return dictionary
     }
-    
-    static func decode<T>(clazz clazz: T.Type, source: AnyObject) -> T {
+
+    static func decode<T>(clazz: T.Type, source: Any) -> T {
         if self.decoders.count == 0 {
-           initialize()
+            initialize()
         }
         if source is T {
             return source as! T
         }
-        
+
         let key = "\(T.self)"
         if let decoder = decoders[key] {
-           return decoder(source) as! T
+            return decoder(source) as! T
         } else {
             fatalError("Source \(source) is not convertible to type \(clazz): Maybe swagger file is insufficient")
         }
     }
 
-    static func decodeOptional<T>(clazz clazz: T.Type, source: AnyObject?) -> T? {
+    static func decodeOptional<T>(clazz: T.Type, source: Any?) -> T? {
         if source is NSNull {
             return nil
         }
-        return source.map { (source: AnyObject) -> T in
+        return source.map { (source: Any) -> T in
             Decoders.decode(clazz: clazz, source: source)
         }
     }
 
-    static func decodeOptional<T>(clazz clazz: [T].Type, source: AnyObject?) -> [T]? {
+    static func decodeOptional<T>(clazz: [T].Type, source: Any?) -> [T]? {
         if source is NSNull {
             return nil
         }
-        return source.map { (someSource: AnyObject) -> [T] in
+        return source.map { (someSource: Any) -> [T] in
             Decoders.decode(clazz: clazz, source: someSource)
         }
     }
 
-    static func decodeOptional<T, Key: Hashable>(clazz clazz: [Key:T].Type, source: AnyObject?) -> [Key:T]? {
+    static func decodeOptional<T, Key: Hashable>(clazz: [Key:T].Type, source: Any?) -> [Key:T]? {
         if source is NSNull {
             return nil
         }
-        return source.map { (someSource: AnyObject) -> [Key:T] in
+        return source.map { (someSource: Any) -> [Key:T] in
             Decoders.decode(clazz: clazz, source: someSource)
         }
     }
@@ -100,8 +100,8 @@ class Decoders {
             {{#models}}{{#model}}
 
 			// Decoder for {{{classname}}}
-            Decoders.addDecoder(clazz: {{{classname}}}.self) { (source: AnyObject) -> {{{classname}}} in
-                let sourceDictionary = source as! [NSObject:AnyObject]
+            Decoders.addDecoder(clazz: {{{classname}}}.self) { (source: Any) -> {{{classname}}} in
+                let sourceDictionary = source as! [String:Any]
                 let instance: {{classname}} = {{classname}}(){{#vars}}
                 instance.{{name}} = Decoders.decode{{^unwrapRequired}}Optional{{/unwrapRequired}}{{#unwrapRequired}}{{^required}}Optional{{/required}}{{/unwrapRequired}}(clazz: {{{baseType}}}.self, source: sourceDictionary["{{name}}"]{{#unwrapRequired}}{{#required}}!{{/required}}{{/unwrapRequired}}) as {{{datatype}}}{{^required}}?{{/required}}{{#required}}!{{/required}}{{/vars}}
                 return instance

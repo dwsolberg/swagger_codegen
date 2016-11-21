@@ -7,7 +7,7 @@
 import UIKit
 
 class APIHelper {
-    static func rejectNil(source: [String:AnyObject?]) -> [String:AnyObject]? {
+    static func rejectNil(_ source: [String:AnyObject?]) -> [String:AnyObject]? {
         var destination = [String:AnyObject]()
         for (key, nillableValue) in source {
             if let value: AnyObject = nillableValue {
@@ -22,20 +22,14 @@ class APIHelper {
     }
 }
 
-// From  http://stackoverflow.com/questions/24034544/dispatch-after-gcd-in-swift/24318861#24318861
-func delay(delay:Double, closure: () -> Void ) {
-    dispatch_after(
-        dispatch_time(
-            DISPATCH_TIME_NOW,
-            Int64(delay * Double(NSEC_PER_SEC))
-        ),
-        dispatch_get_main_queue(), closure)
+func runOnMainThreadAfterDelay(_ delay:Double, closure: @escaping () -> Void ) {
+    DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+        closure()
+    }
 }
 
-extension NSHTTPURLResponse {
+extension HTTPURLResponse {
     var isValid: Bool {
         return (self.statusCode > 199 && self.statusCode < 401) ? true : false
     }
 }
-
-let NotificationNameTokenRefresh = "TokenRefreshed"

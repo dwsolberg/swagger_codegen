@@ -21,15 +21,15 @@ class {{classname}}: NSObject, JSONEncodable, NSCoding {
     
 {{/vars}}
     // MARK: - JSONEncodable Protocol Methods
-    func encodeToJSON() -> AnyObject {
-        var dictionary = [String:AnyObject]()
+    func encodeToJSON() -> Any {
+        var dictionary = [String:Any]()
 {{#vars}}{{#required}}
         dictionary[key_{{name}}] = self.{{name}}.encodeToJSON()
 {{/required}}{{^required}}
         if let valid_{{name}} = self.{{name}} {
             dictionary[key_{{name}}] = valid_{{name}}.encodeToJSON()
         }{{/required}}{{/vars}}
-        return dictionary
+        return dictionary as AnyObject
     }
 
     // MARK: - Initializer(s)
@@ -46,14 +46,14 @@ class {{classname}}: NSObject, JSONEncodable, NSCoding {
     }{{/isInitRequired}}
 
     // MARK: - NSCoding Protocol Methods
-    required init?(coder aDecoder: NSCoder) {
+    required init?(coder: NSCoder) {
         super.init()
-{{#vars}}        if let valid_{{name}} = aDecoder.decodeObjectForKey(key_{{name}}) as? {{{datatype}}} {
+{{#vars}}        if let valid_{{name}} = coder.decodeObject(forKey: key_{{name}}) as? {{{datatype}}} {
             self.{{name}} = valid_{{name}}
         }
 {{/vars}}    }
 
-    func encodeWithCoder(aCoder: NSCoder) { 
-{{#vars}}        aCoder.encodeObject({{name}}, forKey: key_{{name}}) 
+    func encode(with aCoder: NSCoder) { 
+{{#vars}}        aCoder.encode({{name}}, forKey: key_{{name}}) 
 {{/vars}}    }
 }{{/model}} {{/models}}

@@ -29,8 +29,8 @@ struct Network {
         static let client_secret = "ccfcc9f3040e127a9835c39c2c898809adfb2c8506e4849f6f9b505c0299f7c2"
     }
     
-    static func urlForEndpoint(endpoint: String) -> NSURL {
-        return NSURL(string: Network.basePath + endpoint)!
+    static func urlByAppending(endpoint: String) -> URL {
+        return URL(string: Network.basePath + endpoint)!
     }
     
     struct Header {

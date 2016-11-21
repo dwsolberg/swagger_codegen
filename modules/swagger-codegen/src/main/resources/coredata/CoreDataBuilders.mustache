@@ -15,11 +15,11 @@ protocol CoreDataBuildable {
     func createAndOrUpdateManagedObject(context: NSManagedObjectContext) -> {{classname}}CD?
     {
         let cd{{classname}}: {{classname}}CD
-        if let existing = {{classname}}CD.objectForUuid(uuid, context: context) as? {{classname}}CD {
+        if let existing = {{classname}}CD.object(forUUID: uuid, context: context) as? {{classname}}CD {
             cd{{classname}} = existing
         } else { {{#isProtocolSoftDeletableType}}
             if self.deleted_on_server == true { return nil }{{/isProtocolSoftDeletableType}}
-            cd{{classname}} = NSEntityDescription.insertNewObjectForEntityForName(String({{classname}}CD), inManagedObjectContext: context) as! {{classname}}CD
+            cd{{classname}} = NSEntityDescription.insertNewObject(forEntityName: {{classname}}CD.entityName, into: context) as! {{classname}}CD
         }
 
 {{#vars}}{{^isForeignTableReferenceByUUID}}        cd{{classname}}.{{name}} = {{name}}
@@ -27,7 +27,7 @@ protocol CoreDataBuildable {
 {{#isForeignTableReferenceByUUID}}{{#isCreateTableLinkMethods}}{{#isToManyReference}}
         if let uuids = {{name}} {
             let objectArray = uuids.map({ (uuid: String) -> {{referencesPropertyName}}CD? in
-                return {{referencesPropertyName}}CD.objectForUuid(uuid, context: context) as! {{referencesPropertyName}}CD?
+                return {{referencesPropertyName}}CD.object(forUUID: uuid, context: context) as! {{referencesPropertyName}}CD?
                 })
             let flattened = objectArray.flatMap{ $0 }
             assert(uuids.count == flattened.count, "Data integrity failure. The uuids \(uuids) could not be found for objects \(objectArray).")
@@ -36,7 +36,7 @@ protocol CoreDataBuildable {
 {{/isToManyReference}}
 {{^isToManyReference}}
         if let uuid = {{name}} {
-            if let object = {{referencesPropertyName}}CD.objectForUuid(uuid, context: context) as? {{referencesPropertyName}}CD {
+            if let object = {{referencesPropertyName}}CD.object(forUUID: uuid, context: context) as? {{referencesPropertyName}}CD {
                 cd{{classname}}.{{referencesRelationName}} = object
             } else {
                     assertionFailure("Data integrity failure. The uuid \(uuid) could not be found.")

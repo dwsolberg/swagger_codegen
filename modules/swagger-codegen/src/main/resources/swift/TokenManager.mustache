@@ -1,7 +1,7 @@
 //
 //  TokenManager.swift
 //  Swagger Generated
-//  Created by David Solberg on 12/21/15.
+//  Created by David Solberg on 12/21/15. Swift 3 on 11/9/16.
 //
 
 // Note: Requires SSKeychain for Persistence
@@ -13,13 +13,13 @@ struct Token {
     // MARK: - Exposed Variables
     
     static var header : String? {
-        get { return getToken(headerToken) }
-        set { setToken(newValue, account: headerToken) }
+        get { return getToken(account: headerToken) }
+        set { setToken(token: newValue, account: headerToken) }
     }
     
     static var refresh : String? {
-        get { return getToken(refreshToken) }
-        set { setToken(newValue, account: refreshToken) }
+        get { return getToken(account: refreshToken) }
+        set { setToken(token: newValue, account: refreshToken) }
     }
 
     static func reset() {
@@ -41,23 +41,23 @@ struct Token {
     private static func setToken(token: String?, account: String)
     {
         if let token = token {
-            saveToken(token, account: account)
+            save(token: token, account: account)
         }
         else {
-            deleteToken(account)
+            deleteToken(account: account)
         }
     }
     
-    private static func saveToken(token: String, account: String) {
+    private static func save(token: String, account: String) {
         let success = SSKeychain.setPassword(token, forService: service, account: account)
         assert(success, "SSKeychain failed to save the token!")
     }
-    
+
     private static func getToken(account: String) -> String? {
-        return SSKeychain.passwordForService(service, account: account)
+        return SSKeychain.password(forService: service, account: account)
     }
     
     private static func deleteToken(account: String) {
-        SSKeychain.deletePasswordForService(service, account: account)
+        SSKeychain.deletePassword(forService: service, account: account)
     }
 }

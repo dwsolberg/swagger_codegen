@@ -10,14 +10,30 @@ import CoreData
 {{#models}}{{#model}}{{#isBuildCoreData}}extension {{classname}}CD: Findable{{#isProtocolUUIDType}}, UUIDType{{/isProtocolUUIDType}}{{#isProtocolSortOrderType}}, SortOrderType{{/isProtocolSortOrderType}}{{#isProtocolNameType}}, NameType{{/isProtocolNameType}}{{#isProtocolSoftDeletableType}}, SoftDeletableType{{/isProtocolSoftDeletableType}} {}
 {{/isBuildCoreData}}{{/model}}{{/models}}
 
+protocol EntityNameable: class {
+    static var entityName: String { get }
+}
+
+extension EntityNameable {
+    static var entityName: String {
+        return self.baseClassName
+    }
+
+    static var baseClassName: String! {
+        let namespacedClassName = NSStringFromClass(self) as NSString
+        let baseClassName = namespacedClassName.components(separatedBy: ".").last
+        return baseClassName!
+    }
+}
+
 // Findable Protocol - All Core Data Items are Findable
-protocol Findable: class { }
+protocol Findable: class, EntityNameable { }
 
 extension Findable {
     static var allObjects: [Self] {
-        let fetch = NSFetchRequest(entityName: String(Self))
+        let fetch = NSFetchRequest<NSFetchRequestResult>(entityName: self.entityName)
         do {
-            let results = try CDStack.context.executeFetchRequest(fetch)
+            let results = try CDStack.context.fetch(fetch)
             return results as! [Self]
         } catch (let error) {
             assertionFailure("\(error)")
@@ -27,17 +43,17 @@ extension Findable {
 }
 
 // SortOrderType Protocol - If the object has a sort_order
-protocol SortOrderType: Findable {
+protocol SortOrderType: class, Findable {
     var sort_order: Int? { get set } // always setting integers to max in Core Data
 }
 
 extension SortOrderType {
-    static func sortedObjects(ascending ascending: Bool) -> [Self] {
-        let fetch = NSFetchRequest(entityName: String(Self))
+    static func sortedObjects(ascending: Bool) -> [Self] {
+        let fetch = NSFetchRequest<NSFetchRequestResult>(entityName: self.entityName)
         do {
             let sortDesc = NSSortDescriptor(key: "sort_order", ascending: ascending)
             fetch.sortDescriptors = [sortDesc]
-            let results = try CDStack.context.executeFetchRequest(fetch)
+            let results = try CDStack.context.fetch(fetch)
             return results as! [Self]
         } catch (let error) {
             assertionFailure("\(error)")
@@ -48,23 +64,23 @@ extension SortOrderType {
 
 // MARK: - Find items by UUID
 
-@objc protocol UUIDType: class {
-     var uuid: String! { get set }
-     static func objectForUuid(uuid: String, context: NSManagedObjectContext) -> NSManagedObject?
-     static func objectsForUuids(uuids: [String], context: NSManagedObjectContext) -> [NSManagedObject]?
+protocol UUIDType: class, EntityNameable {
+     var uuid: String! { get }
+     static func object(forUUID uuid: String, context: NSManagedObjectContext) -> NSManagedObject?
+     static func objects(forUuids uuids: [String], context: NSManagedObjectContext) -> [NSManagedObject]?
      static var entityName: String { get }
 }
 
-extension NSManagedObject {
-    static var entityName: String { return String(self) }
+extension NSManagedObject: EntityNameable {
+    static var entityName: String { return self.baseClassName }
     
-    static func objectForUuid(uuid: String, context: NSManagedObjectContext) -> NSManagedObject? {
+    static func object(forUUID uuid: String, context: NSManagedObjectContext) -> NSManagedObject? {
         let predUuid = NSPredicate(format: "uuid = %@", uuid)
-        let request = NSFetchRequest(entityName:entityName)
+        let request = NSFetchRequest<NSFetchRequestResult>(entityName:self.baseClassName)
         request.predicate = predUuid;
         
         do {
-            let results = try context.executeFetchRequest(request)
+            let results = try context.fetch(request)
             assert(results.count <= 1, "Never should have more than one uuid!")
             if let object = results.first as? NSManagedObject {
                 return object
@@ -74,9 +90,9 @@ extension NSManagedObject {
         }
         return nil
     }
-    
-    static func objectsForUuids(uuids: [String], context: NSManagedObjectContext) -> [NSManagedObject]? {
-        let objects = uuids.map{ objectForUuid($0, context: context) }.flatMap{ $0 }
+
+    static func objects(forUuids uuids: [String], context: NSManagedObjectContext) -> [NSManagedObject]? {
+        let objects = uuids.map{ object(forUUID: $0, context: context) }.flatMap{ $0 }
         if objects.count > 0 {
             return objects
         } else {
@@ -87,18 +103,18 @@ extension NSManagedObject {
 
 // MARK: - Search by String in Object Name
 
-@objc protocol NameType: class {
+protocol NameType: class, EntityNameable {
     var name: String? { get set }
 }
 
 extension NameType {
     
     static func objectsWithNameThatContainsString(aString: String) -> [Self] {
-        let fetch = NSFetchRequest(entityName: String(Self))
+        let fetch = NSFetchRequest<NSFetchRequestResult>(entityName: self.entityName)
         fetch.predicate = NSPredicate(format: "name CONTAINS[cd] %@", aString)
         fetch.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
         do {
-            let results = try CDStack.context.executeFetchRequest(fetch)
+            let results = try CDStack.context.fetch(fetch)
             return results as! [Self]
         } catch (let error) {
             assertionFailure("\(error)")
@@ -106,12 +122,12 @@ extension NameType {
         }
     }
     
-    static func sortedObjectsByName(ascending ascending: Bool) -> [Self] {
-        let fetch = NSFetchRequest(entityName: String(Self))
+    static func sortedObjectsByName(ascending: Bool) -> [Self] {
+        let fetch = NSFetchRequest<NSFetchRequestResult>(entityName: self.entityName)
         do {
             let sortDesc = NSSortDescriptor(key: "name", ascending: ascending)
             fetch.sortDescriptors = [sortDesc]
-            let results = try CDStack.context.executeFetchRequest(fetch)
+            let results = try CDStack.context.fetch(fetch)
             return results as! [Self]
         } catch (let error) {
             assertionFailure("\(error)")
@@ -123,17 +139,18 @@ extension NameType {
 
 // MARK: - Find soft deleted items.
 
-protocol SoftDeletableType {
+protocol SoftDeletableType: class, EntityNameable {
     var deleted_on_server: Bool? { get set }
 }
 
 extension SoftDeletableType where Self: AnyObject
 {
     static func softDeletedObjects(context: NSManagedObjectContext) -> [Self] {
-        let fetch = NSFetchRequest(entityName: String(Self))
+        let fetch = NSFetchRequest<NSFetchRequestResult>(entityName: self.entityName
+        )
         do {
-            fetch.predicate = NSPredicate(format: "deleted_on_server == %@", NSNumber(bool: true))
-            let results = try context.executeFetchRequest(fetch)
+            fetch.predicate = NSPredicate(format: "deleted_on_server == %@", NSNumber(value: true))
+            let results = try context.fetch(fetch)
             return results as! [Self]
         } catch (let error) {
             assertionFailure("\(error)")

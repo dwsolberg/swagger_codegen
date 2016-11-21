@@ -18,14 +18,14 @@ class {{classname}} {
      - returns: NetworkResult<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Void{{/returnType}}> {{description}}
      */
 
-    static func {{operationId}}({{#hasParams}}{{#allParams}}{{paramName}}{{#secondaryParam}}{{paramName}}{{/secondaryParam}}: {{{dataType}}}{{^required}}?{{/required}}{{#hasMore}}, {{/hasMore}}{{/allParams}}, {{/hasParams}}completion: (result: NetworkResult<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Void{{/returnType}}>) -> Void) {
+    static func {{operationId}}({{#hasParams}}{{#allParams}}{{paramName}}{{#secondaryParam}}{{paramName}}{{/secondaryParam}}: {{{dataType}}}{{^required}}?{{/required}}{{#hasMore}}, {{/hasMore}}{{/allParams}}, {{/hasParams}}completion: @escaping (_ result: NetworkResult<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Void{{/returnType}}>) -> Void) {
 {{#authMethods}}{{#isOAuth}}        guard let authHeaders = Network.Header.standardIncludeAuth else {
             assertionFailure("Could not create an auth header")
             return
         }{{/isOAuth}}{{/authMethods}}
         {{^pathParams}}let{{/pathParams}}{{#pathParams}}{{^secondaryParam}}var{{/secondaryParam}}{{/pathParams}} path = "{{path}}"{{#pathParams}}
         path = path.stringByReplacingOccurrencesOfString("{{=<% %>=}}{<%paramName%>}<%={{ }}=%>", withString: "\({{paramName}})", options: .LiteralSearch, range: nil){{/pathParams}}
-        let url = Network.urlForEndpoint(path){{#hasParams}}{{#bodyParam}}
+        let url = Network.urlByAppending(endpoint: path){{#hasParams}}{{#bodyParam}}
         let parameters = {{paramName}}{{^required}}?{{/required}}.encodeToJSON() as! [String : AnyObject]{{/bodyParam}}{{^bodyParam}}
         let nillableParameters: [String:AnyObject?] = {{^queryParams}}{{^formParams}}[:]{{/formParams}}{{#formParams}}{{^secondaryParam}}[{{/secondaryParam}}
             "{{paramName}}": {{paramName}}{{#hasMore}},{{/hasMore}}{{^hasMore}}
@@ -36,8 +36,8 @@ class {{classname}} {
 
         let request = NetworkRequestorWithResultType<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Void{{/returnType}}>(method: "{{httpMethod}}", URL: url, headers: {{#authMethods}}{{#isOAuth}}authHeaders{{/isOAuth}}{{^isOAuth}}Network.Header.json{{/isOAuth}}{{/authMethods}}{{^authMethods}}Network.Header.json{{/authMethods}}, parameters: {{#hasParams}}parameters{{/hasParams}}{{^hasParams}}nil{{/hasParams}})
 
-        request.sendWithResult { (result: NetworkResult<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Void{{/returnType}}>) -> Void in
-            completion(result: result)
+        let _ = request.sendWithResult { (result: NetworkResult<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Void{{/returnType}}>) -> Void in
+            completion(result)
         }
     }
 {{/operation}}

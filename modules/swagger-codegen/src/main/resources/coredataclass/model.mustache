@@ -12,6 +12,21 @@ import CoreData
 @objc({{classname}}CD)
 class {{classname}}CD: NSManagedObject {
 
+        var isSynced: Bool? {
+            get {
+                willAccessValue(forKey: "isSynced")
+                let value = primitiveValue(forKey: "isSynced") as? Bool
+                didAccessValue(forKey: "isSynced")
+                return value
+            }
+            set {
+                willChangeValue(forKey: "isSynced")
+                let value: Bool? = newValue ?? nil
+                setPrimitiveValue(value, forKey: "isSynced")
+                didChangeValue(forKey: "isSynced")
+            }
+        }
+
 {{#vars}}{{^isForeignTableReferenceByUUID}}{{^isPrimitiveType}}        @NSManaged var {{name}}: {{datatype}}{{^required}}?{{/required}}{{#required}}!{{/required}}
 {{/isPrimitiveType}}{{#isPrimitiveType}}        var {{name}}: {{datatype}}{{^required}}?{{/required}}{{#required}}!{{/required}} {
             // Getters and setters required to make it possible to have optional primitive types.
